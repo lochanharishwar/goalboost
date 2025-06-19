@@ -56,7 +56,7 @@ const Index = () => {
   };
 
   // Custom day component with status indicators
-  const DayContent = ({ date, ...props }: { date: Date }) => {
+  const DayContent = ({ date, ...props }: { date: Date; className?: string; [key: string]: any }) => {
     const status = getDateTaskStatus(date);
     const dayNumber = date.getDate();
     
