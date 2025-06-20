@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { format, addDays } from 'date-fns';
 import { Header } from '@/components/Header';
@@ -59,8 +58,8 @@ const Dashboard = () => {
       setNewTaskText('');
       setNewTaskPriority('daily');
       toast({
-        title: "🏆 Elite Goal Added!",
-        description: "Your premium objective has been registered in ASPIRA.",
+        title: "✅ Goal Added!",
+        description: "Your goal has been added successfully.",
       });
     }
   };
@@ -76,8 +75,8 @@ const Dashboard = () => {
     const task = tasks.find(t => t.id === taskId);
     if (task && !task.completed) {
       toast({
-        title: "💎 Excellence Achieved!",
-        description: "Outstanding performance! ASPIRA recognizes your elite level execution.",
+        title: "🎉 Goal Completed!",
+        description: "Great job! Keep up the excellent work.",
       });
     }
   };
@@ -86,8 +85,8 @@ const Dashboard = () => {
     playClickSound();
     setTasks(tasks.filter(task => task.id !== taskId));
     toast({
-      title: "Task Cancelled",
-      description: "Objective has been removed from your ASPIRA portfolio.",
+      title: "Goal Deleted",
+      description: "Goal has been removed from your list.",
     });
   };
 
@@ -100,8 +99,21 @@ const Dashboard = () => {
         : task
     ));
     toast({
-      title: "📅 Task Postponed",
-      description: "Objective moved to tomorrow. Stay focused on today's priorities.",
+      title: "📅 Goal Postponed",
+      description: "Goal moved to tomorrow.",
+    });
+  };
+
+  const cancelTask = (taskId: string) => {
+    playClickSound();
+    setTasks(tasks.map(task => 
+      task.id === taskId 
+        ? { ...task, completed: false, cancelled: true }
+        : task
+    ));
+    toast({
+      title: "❌ Goal Cancelled",
+      description: "Goal marked as cancelled.",
     });
   };
 
@@ -126,34 +138,17 @@ const Dashboard = () => {
     <div className={cn(
       "min-h-screen relative overflow-hidden transition-all duration-500",
       isDarkMode 
-        ? "bg-gradient-to-br from-slate-900 via-red-900 to-blue-900" 
-        : "bg-gradient-to-br from-blue-50 via-red-50 to-slate-100"
+        ? "bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800" 
+        : "bg-gradient-to-br from-blue-50 via-white to-slate-50"
     )}>
-      {/* Premium animated background */}
+      {/* Simple background */}
       <div className={cn(
         "absolute inset-0 transition-all duration-500",
         isDarkMode 
-          ? "bg-gradient-to-br from-red-600/10 via-transparent to-blue-600/10"
-          : "bg-gradient-to-br from-red-200/20 via-transparent to-blue-200/20"
+          ? "bg-gradient-to-br from-blue-600/5 via-transparent to-slate-600/5"
+          : "bg-gradient-to-br from-blue-200/10 via-transparent to-slate-200/10"
       )}></div>
-      <div className="absolute inset-0">
-        <div className={cn(
-          "absolute top-20 left-20 w-96 h-96 rounded-full blur-3xl animate-pulse",
-          isDarkMode ? "bg-red-500/5" : "bg-red-300/10"
-        )}></div>
-        <div className={cn(
-          "absolute bottom-20 right-20 w-96 h-96 rounded-full blur-3xl animate-pulse delay-1000",
-          isDarkMode ? "bg-blue-500/5" : "bg-blue-300/10"
-        )}></div>
-        <div className={cn(
-          "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-3xl animate-spin duration-[20s]",
-          isDarkMode 
-            ? "bg-gradient-conic from-red-500/10 via-blue-500/10 to-red-500/10"
-            : "bg-gradient-conic from-red-300/20 via-blue-300/20 to-red-300/20"
-        )}></div>
-      </div>
 
-      {/* Header */}
       <Header 
         isDarkMode={isDarkMode} 
         onToggleTheme={toggleTheme}
@@ -161,9 +156,17 @@ const Dashboard = () => {
         onDateSelect={setSelectedDate}
       />
 
-      <div className="relative max-w-6xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Goals Card */}
+      <div className="relative max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Welcome to Your Dashboard
+          </h1>
+          <p className="text-gray-300">
+            {format(selectedDate, 'EEEE, MMMM dd, yyyy')}
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
           <GoalCard
             tasks={tasks}
             newTaskText={newTaskText}
@@ -175,48 +178,33 @@ const Dashboard = () => {
             onToggleTask={toggleTask}
             onDeleteTask={deleteTask}
             onPostponeTask={postponeTask}
+            onCancelTask={cancelTask}
             onKeyPress={handleKeyPress}
           />
 
-          {/* Stats and Motivation */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <StatsCard tasks={tasks} selectedDate={selectedDateString} />
 
-            {/* Premium Motivational Card */}
-            <Card className="shadow-2xl border-0 bg-gradient-to-br from-red-600/30 to-blue-600/30 backdrop-blur-xl border border-white/10 transform hover:scale-[1.02] transition-all duration-500">
-              <CardContent className="p-8">
+            <Card className="shadow-lg border-0 bg-black/30 backdrop-blur-xl border border-blue-500/20">
+              <CardContent className="p-6">
                 <div className="text-center">
-                  <div className="text-5xl mb-4 animate-bounce">
-                    {progressPercentage === 100 ? '👑' : 
-                     progressPercentage >= 50 ? '💎' : '⚡'}
+                  <div className="text-4xl mb-3">
+                    {progressPercentage === 100 ? '🏆' : 
+                     progressPercentage >= 50 ? '⭐' : '🎯'}
                   </div>
-                  <h3 className="font-bold text-xl mb-3 text-white drop-shadow-lg">
-                    {progressPercentage === 100 ? 'ELITE PERFORMANCE!' :
-                     progressPercentage >= 50 ? 'EXECUTIVE EXCELLENCE!' :
-                     'PREMIUM POTENTIAL!'}
+                  <h3 className="font-bold text-lg mb-2 text-white">
+                    {progressPercentage === 100 ? 'Perfect Day!' :
+                     progressPercentage >= 50 ? 'Great Progress!' :
+                     'Keep Going!'}
                   </h3>
-                  <p className="text-gray-200 text-sm leading-relaxed font-medium">
+                  <p className="text-gray-300 text-sm">
                     {progressPercentage === 100 
-                      ? 'Outstanding achievement! You\'ve reached the pinnacle of executive performance with ASPIRA.' :
+                      ? 'You\'ve completed all your goals for today!' :
                       progressPercentage >= 50
-                        ? 'Exceptional progress! You\'re operating at premium levels with ASPIRA\'s guidance.' :
-                        'Elite minds start with premium objectives. Your ASPIRA success story begins now.'}
+                        ? 'You\'re doing great! Keep up the momentum.' :
+                        'Every step counts. You\'ve got this!'}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Premium Executive Tip */}
-            <Card className="shadow-2xl border-0 bg-black/40 backdrop-blur-xl border border-white/10 transform hover:scale-[1.02] transition-all duration-500">
-              <CardHeader>
-                <CardTitle className="text-lg text-white font-bold flex items-center gap-2">
-                  💡 ASPIRA Insight
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-300 text-sm leading-relaxed font-medium">
-                  Premium performance requires strategic decomposition. ASPIRA's methodology amplifies achievement rates while maintaining executive-level quality standards through precise, executable actions.
-                </p>
               </CardContent>
             </Card>
           </div>

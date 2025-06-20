@@ -9,15 +9,21 @@ import { cn } from '@/lib/utils';
 import { useClickSound } from '@/utils/soundUtils';
 
 const Pomodoro = () => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<'work' | 'break'>('work');
   const [workTime, setWorkTime] = useState(25);
   const [breakTime, setBreakTime] = useState(5);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize timer with work time
+  useEffect(() => {
+    setTimeLeft(workTime * 60);
+  }, [workTime]);
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -25,7 +31,6 @@ const Pomodoro = () => {
         setTimeLeft(timeLeft - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Timer finished
       setIsActive(false);
       if (mode === 'work') {
         toast({
@@ -66,12 +71,28 @@ const Pomodoro = () => {
     playClickSound();
     setMode(newMode);
     setIsActive(false);
-    setTimeLeft(newMode === 'work' ? workTime * 60 : breakTime * 60);
+    set TimeLeft(newMode === 'work' ? workTime * 60 : breakTime * 60);
   };
 
   const toggleTheme = () => {
     playClickSound();
     setIsDarkMode(!isDarkMode);
+  };
+
+  const updateWorkTime = (minutes: number) => {
+    playClickSound();
+    setWorkTime(minutes);
+    if (mode === 'work' && !isActive) {
+      setTimeLeft(minutes * 60);
+    }
+  };
+
+  const updateBreakTime = (minutes: number) => {
+    playClickSound();
+    setBreakTime(minutes);
+    if (mode === 'break' && !isActive) {
+      setTimeLeft(minutes * 60);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -91,65 +112,57 @@ const Pomodoro = () => {
         ? "bg-gradient-to-br from-slate-900 via-green-900 to-teal-900" 
         : "bg-gradient-to-br from-green-50 via-teal-50 to-slate-100"
     )}>
-      {/* Premium animated background */}
-      <div className={cn(
-        "absolute inset-0 transition-all duration-500",
-        isDarkMode 
-          ? "bg-gradient-to-br from-green-600/10 via-transparent to-teal-600/10"
-          : "bg-gradient-to-br from-green-200/20 via-transparent to-teal-200/20"
-      )}></div>
-
       <Header 
         isDarkMode={isDarkMode} 
         onToggleTheme={toggleTheme}
       />
 
-      <div className="relative max-w-4xl mx-auto px-6 py-12">
+      <div className="relative max-w-4xl mx-auto px-6 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-4">Pomodoro</h1>
-          <p className="text-gray-300">More concentrated, More efficient</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Pomodoro Timer</h1>
+          <p className="text-gray-300">Stay focused and productive</p>
         </div>
 
         {/* Mode Switcher */}
         <div className="flex justify-center mb-8">
-          <div className="flex bg-black/40 rounded-lg p-1 backdrop-blur-xl border border-green-500/20">
+          <div className="flex bg-black/30 rounded-lg p-1 backdrop-blur-xl">
             <SoundButton
               onClick={() => switchMode('work')}
               className={cn(
                 "px-6 py-2 rounded-md transition-all duration-300",
                 mode === 'work' 
-                  ? "bg-green-500 text-white shadow-lg" 
+                  ? "bg-green-500 text-white" 
                   : "bg-transparent text-gray-300 hover:text-white"
               )}
             >
-              Focus
+              Focus ({workTime}min)
             </SoundButton>
             <SoundButton
               onClick={() => switchMode('break')}
               className={cn(
                 "px-6 py-2 rounded-md transition-all duration-300",
                 mode === 'break' 
-                  ? "bg-teal-500 text-white shadow-lg" 
+                  ? "bg-teal-500 text-white" 
                   : "bg-transparent text-gray-300 hover:text-white"
               )}
             >
-              Break
+              Break ({breakTime}min)
             </SoundButton>
           </div>
         </div>
 
         {/* Timer Display */}
-        <Card className="shadow-2xl border-0 bg-black/40 backdrop-blur-xl border border-green-500/20 max-w-md mx-auto">
-          <CardContent className="p-12 text-center">
-            <div className="relative mb-8">
+        <Card className="shadow-xl border-0 bg-black/30 backdrop-blur-xl border border-green-500/20 max-w-md mx-auto mb-6">
+          <CardContent className="p-8 text-center">
+            <div className="relative mb-6">
               {/* Circular Progress */}
-              <svg className="w-64 h-64 transform -rotate-90 mx-auto" viewBox="0 0 100 100">
+              <svg className="w-48 h-48 transform -rotate-90 mx-auto" viewBox="0 0 100 100">
                 <circle
                   cx="50"
                   cy="50"
                   r="40"
                   stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="4"
+                  strokeWidth="6"
                   fill="none"
                 />
                 <circle
@@ -157,21 +170,21 @@ const Pomodoro = () => {
                   cy="50"
                   r="40"
                   stroke={mode === 'work' ? "#10b981" : "#14b8a6"}
-                  strokeWidth="4"
+                  strokeWidth="6"
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${progress * 2.51} 251`}
-                  className="transition-all duration-1000 ease-out"
+                  className="transition-all duration-1000"
                 />
               </svg>
               
               {/* Time Display */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-6xl font-bold text-white mb-2">
+                  <div className="text-4xl font-bold text-white mb-1">
                     {formatTime(timeLeft)}
                   </div>
-                  <div className="text-lg text-gray-300 capitalize">
+                  <div className="text-sm text-gray-300 capitalize">
                     {mode === 'work' ? 'Focus Time' : 'Break Time'}
                   </div>
                 </div>
@@ -179,67 +192,146 @@ const Pomodoro = () => {
             </div>
 
             {/* Controls */}
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-3">
               <SoundButton
                 onClick={toggleTimer}
                 size="lg"
                 className={cn(
-                  "rounded-full w-16 h-16 shadow-xl transition-all duration-300 hover:scale-110",
+                  "rounded-full w-12 h-12 transition-all duration-300",
                   mode === 'work' 
                     ? "bg-green-500 hover:bg-green-600 text-white" 
                     : "bg-teal-500 hover:bg-teal-600 text-white"
                 )}
               >
-                {isActive ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                {isActive ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
               </SoundButton>
               
               <SoundButton
                 onClick={resetTimer}
                 size="lg"
                 variant="outline"
-                className="rounded-full w-16 h-16 border-gray-500 text-gray-300 hover:text-white hover:border-white transition-all duration-300 hover:scale-110"
+                className="rounded-full w-12 h-12 border-gray-500 text-gray-300 hover:text-white hover:border-white"
               >
-                <RotateCcw className="h-6 w-6" />
+                <RotateCcw className="h-5 w-5" />
+              </SoundButton>
+
+              <SoundButton
+                onClick={() => {
+                  playClickSound();
+                  setShowSettings(!showSettings);
+                }}
+                size="lg"
+                variant="outline"
+                className="rounded-full w-12 h-12 border-gray-500 text-gray-300 hover:text-white hover:border-white"
+              >
+                <Settings className="h-5 w-5" />
               </SoundButton>
             </div>
           </CardContent>
         </Card>
 
-        {/* Settings */}
-        <Card className="mt-8 shadow-2xl border-0 bg-black/40 backdrop-blur-xl border border-green-500/20 max-w-md mx-auto">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Settings className="h-5 w-5 text-white" />
-              <h3 className="text-white font-semibold">Timer Settings</h3>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-300 text-sm mb-2">Work Duration (minutes)</label>
-                <input
-                  type="number"
-                  value={workTime}
-                  onChange={(e) => setWorkTime(parseInt(e.target.value) || 25)}
-                  className="w-full bg-black/30 border border-green-400/30 rounded-md px-3 py-2 text-white"
-                  min="1"
-                  max="60"
-                />
-              </div>
+        {/* Custom Settings */}
+        {showSettings && (
+          <Card className="shadow-xl border-0 bg-black/30 backdrop-blur-xl border border-green-500/20 max-w-md mx-auto">
+            <CardContent className="p-6">
+              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Timer Settings
+              </h3>
               
-              <div>
-                <label className="block text-gray-300 text-sm mb-2">Break Duration (minutes)</label>
-                <input
-                  type="number"
-                  value={breakTime}
-                  onChange={(e) => setBreakTime(parseInt(e.target.value) || 5)}
-                  className="w-full bg-black/30 border border-green-400/30 rounded-md px-3 py-2 text-white"
-                  min="1"
-                  max="30"
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-300 text-sm mb-2">Focus Time (minutes)</label>
+                  <div className="flex items-center gap-2">
+                    <SoundButton
+                      onClick={() => updateWorkTime(Math.max(1, workTime - 5))}
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0"
+                    >
+                      -
+                    </SoundButton>
+                    <input
+                      type="number"
+                      value={workTime}
+                      onChange={(e) => updateWorkTime(parseInt(e.target.value) || 25)}
+                      className="w-20 bg-black/30 border border-green-400/30 rounded px-2 py-1 text-white text-center"
+                      min="1"
+                      max="120"
+                    />
+                    <SoundButton
+                      onClick={() => updateWorkTime(Math.min(120, workTime + 5))}
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0"
+                    >
+                      +
+                    </SoundButton>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-gray-300 text-sm mb-2">Break Time (minutes)</label>
+                  <div className="flex items-center gap-2">
+                    <SoundButton
+                      onClick={() => updateBreakTime(Math.max(1, breakTime - 1))}
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0"
+                    >
+                      -
+                    </SoundButton>
+                    <input
+                      type="number"
+                      value={breakTime}
+                      onChange={(e) => updateBreakTime(parseInt(e.target.value) || 5)}
+                      className="w-20 bg-black/30 border border-green-400/30 rounded px-2 py-1 text-white text-center"
+                      min="1"
+                      max="60"
+                    />
+                    <SoundButton
+                      onClick={() => updateBreakTime(Math.min(60, breakTime + 1))}
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0"
+                    >
+                      +
+                    </SoundButton>
+                  </div>
+                </div>
+
+                {/* Preset Buttons */}
+                <div className="pt-2">
+                  <p className="text-gray-300 text-sm mb-2">Quick Presets:</p>
+                  <div className="flex gap-2">
+                    <SoundButton
+                      onClick={() => {
+                        updateWorkTime(25);
+                        updateBreakTime(5);
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                    >
+                      Classic (25/5)
+                    </SoundButton>
+                    <SoundButton
+                      onClick={() => {
+                        updateWorkTime(50);
+                        updateBreakTime(10);
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                    >
+                      Extended (50/10)
+                    </SoundButton>
+                  </div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
