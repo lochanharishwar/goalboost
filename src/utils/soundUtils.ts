@@ -27,7 +27,7 @@ class SoundManager {
     const buffer = this.audioContext.createBuffer(1, length, sampleRate);
     const data = buffer.getChannelData(0);
 
-    // Generate a sophisticated click sound
+    // Generate a sophisticated click sound with 5x volume
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate;
       const envelope = Math.exp(-t * 50); // Exponential decay
@@ -37,7 +37,7 @@ class SoundManager {
       data[i] = envelope * (
         0.7 * Math.sin(2 * Math.PI * frequency1 * t) +
         0.3 * Math.sin(2 * Math.PI * frequency2 * t)
-      ) * 0.3; // Volume control
+      ) * 1.5; // Increased volume from 0.3 to 1.5 (5x increase)
     }
 
     this.clickSound = buffer;
@@ -59,9 +59,9 @@ class SoundManager {
       source.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
       
-      // Subtle volume fade
-      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+      // Increased volume - 5x louder
+      gainNode.gain.setValueAtTime(0.5, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.05, this.audioContext.currentTime + 0.1);
       
       source.start();
     } catch (error) {
