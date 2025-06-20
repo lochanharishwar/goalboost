@@ -56,13 +56,13 @@ const Index = () => {
   };
 
   // Custom day component with status indicators
-  const DayContent = ({ date, ...props }: { date: Date; className?: string; [key: string]: any }) => {
+  const DayContent = ({ date, className, ...props }: { date: Date; className?: string; [key: string]: any }) => {
     const status = getDateTaskStatus(date);
     const dayNumber = date.getDate();
     
     return (
       <div className="relative w-full h-full flex items-center justify-center">
-        <span className={props.className}>{dayNumber}</span>
+        <span className={className}>{dayNumber}</span>
         {status !== 'none' && (
           <div 
             className={cn(
@@ -278,7 +278,7 @@ const Index = () => {
               </div>
 
               {/* Premium Goals List */}
-              <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-track-black/20 scrollbar-thumb-gradient-to-b scrollbar-thumb-from-red-500 scrollbar-thumb-to-blue-600 hover:scrollbar-thumb-from-red-600 hover:scrollbar-thumb-to-blue-700">
                 {todayTasks.length === 0 ? (
                   <div className="text-center py-12 text-gray-400">
                     <div className="text-6xl mb-4">🎯</div>
@@ -399,23 +399,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #ef4444, #3b82f6);
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #dc2626, #2563eb);
-        }
-      `}</style>
     </div>
   );
 };
