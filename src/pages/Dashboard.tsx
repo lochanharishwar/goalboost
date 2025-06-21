@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { format, startOfWeek, addDays } from 'date-fns';
 import { Header } from '@/components/Header';
@@ -25,16 +26,45 @@ const Dashboard = () => {
 
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
 
+  // Enhanced localStorage with error handling
   useEffect(() => {
-    const savedTasks = localStorage.getItem('aspiraTasks');
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
+    try {
+      const savedTasks = localStorage.getItem('goalflow-tasks');
+      const savedTheme = localStorage.getItem('goalflow-theme');
+      
+      if (savedTasks) {
+        const parsedTasks = JSON.parse(savedTasks);
+        setTasks(Array.isArray(parsedTasks) ? parsedTasks : []);
+      }
+      
+      if (savedTheme) {
+        setIsDarkMode(savedTheme === 'dark');
+      }
+    } catch (error) {
+      console.warn('Failed to load saved data:', error);
+      // Reset to empty state if corrupted
+      localStorage.removeItem('goalflow-tasks');
+      localStorage.removeItem('goalflow-theme');
     }
   }, []);
 
+  // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('aspiraTasks', JSON.stringify(tasks));
+    try {
+      localStorage.setItem('goalflow-tasks', JSON.stringify(tasks));
+    } catch (error) {
+      console.warn('Failed to save tasks:', error);
+    }
   }, [tasks]);
+
+  // Save theme preference
+  useEffect(() => {
+    try {
+      localStorage.setItem('goalflow-theme', isDarkMode ? 'dark' : 'light');
+    } catch (error) {
+      console.warn('Failed to save theme:', error);
+    }
+  }, [isDarkMode]);
 
   const addTask = () => {
     if (newTaskText.trim()) {
@@ -136,14 +166,19 @@ const Dashboard = () => {
         onToggleTheme={toggleTheme}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-white mb-3 font-inter">Welcome to GoalFlow</h1>
-          <p className="text-gray-300 text-lg font-inter">Transform your daily routine into meaningful achievements</p>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Hero Section */}
+        <div className="mb-8 sm:mb-12 text-center">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 font-inter">
+            Welcome to GoalFlow
+          </h1>
+          <p className="text-gray-300 text-base sm:text-lg lg:text-xl font-inter max-w-2xl mx-auto">
+            Transform your daily routine into meaningful achievements
+          </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+        {/* Enhanced Stats Cards with Better Spacing */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           <StatsCard
             title="Today's Progress"
             value={completionRate}
@@ -167,11 +202,12 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Date Selector */}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
+          {/* Date Selector - Enhanced Mobile Layout */}
           <div className="lg:col-span-1">
             <Card className="shadow-2xl border-0 bg-black/20 backdrop-blur-xl border border-blue-500/20 font-inter">
-              <CardHeader>
+              <CardHeader className="pb-4">
                 <CardTitle className="text-white text-lg flex items-center gap-2 font-inter">
                   <CalendarIcon className="h-5 w-5" />
                   Select Date
@@ -208,19 +244,23 @@ const Dashboard = () => {
                   </PopoverContent>
                 </Popover>
                 
-                <div className="mt-6 text-center p-4 bg-blue-500/10 rounded-lg">
+                {/* Enhanced Date Display */}
+                <div className="mt-6 text-center p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-400/20">
                   <p className="text-gray-300 text-sm font-inter mb-1">
                     Planning for:
                   </p>
-                  <p className="text-white font-semibold font-inter">
-                    {format(selectedDate, 'EEEE, MMMM dd, yyyy')}
+                  <p className="text-white font-semibold font-inter text-lg">
+                    {format(selectedDate, 'EEEE')}
+                  </p>
+                  <p className="text-blue-300 font-medium font-inter">
+                    {format(selectedDate, 'MMMM dd, yyyy')}
                   </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Goals for Selected Date */}
+          {/* Goals Section - Enhanced for Mobile */}
           <div className="lg:col-span-3">
             <GoalCard
               tasks={tasks}
@@ -238,6 +278,18 @@ const Dashboard = () => {
             />
           </div>
         </div>
+
+        {/* Motivational Footer */}
+        {completionRate === 100 && todayTasks.length > 0 && (
+          <div className="mt-8 sm:mt-12 text-center">
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500/20 to-blue-500/20 backdrop-blur-xl rounded-full px-6 py-3 border border-green-400/30">
+              <span className="text-2xl">🎉</span>
+              <p className="text-white font-semibold font-inter">
+                Amazing! You've completed all your goals for today!
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
