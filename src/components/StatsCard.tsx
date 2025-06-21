@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Zap, TrendingUp, Award, Target } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
