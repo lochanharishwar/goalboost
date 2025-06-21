@@ -206,6 +206,7 @@ const Dashboard = () => {
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
+                </Popover>
                 
                 <div className="mt-4 text-center">
                   <p className="text-gray-300 text-sm">
