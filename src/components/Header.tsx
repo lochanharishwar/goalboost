@@ -1,6 +1,6 @@
 
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, User, Trophy, Calendar } from 'lucide-react';
+import { Moon, Sun, User, Zap, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -24,21 +24,21 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-black/30 backdrop-blur-xl border-b border-blue-500/20 shadow-2xl">
+    <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-blue-500/20 shadow-2xl">
       <div className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Brand Logo - Updated to blue and white */}
+          {/* Brand Logo - Updated to GoalFlow */}
           <div className="flex items-center gap-3 transform hover:scale-105 transition-all duration-300">
             <div className="relative">
-              <Trophy className="h-8 w-8 text-blue-400 animate-pulse" />
+              <Zap className="h-8 w-8 text-blue-400 animate-pulse" />
               <div className="absolute inset-0 bg-blue-400 blur-lg opacity-30 animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-blue-500 to-white bg-clip-text text-transparent tracking-wide">
-                ASPIRA
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 via-blue-500 to-white bg-clip-text text-transparent tracking-wide font-inter">
+                GoalFlow
               </h1>
-              <p className="text-xs text-white font-medium tracking-wider">
-                PREMIUM PRODUCTIVITY SUITE
+              <p className="text-xs text-blue-200/80 font-medium tracking-wider font-inter">
+                Your Daily Productivity Companion
               </p>
             </div>
           </div>
@@ -48,7 +48,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
             <SoundButton 
               variant="ghost" 
               className={cn(
-                "text-white hover:text-blue-400 transition-colors",
+                "text-white hover:text-blue-400 transition-colors font-inter",
                 isActive('/') && "text-blue-400 bg-blue-500/20"
               )}
               onClick={() => navigate('/')}
@@ -58,7 +58,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
             <SoundButton 
               variant="ghost" 
               className={cn(
-                "text-white hover:text-blue-400 transition-colors",
+                "text-white hover:text-blue-400 transition-colors font-inter",
                 isActive('/analytics') && "text-blue-400 bg-blue-500/20"
               )}
               onClick={() => navigate('/analytics')}
@@ -68,7 +68,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
             <SoundButton 
               variant="ghost" 
               className={cn(
-                "text-white hover:text-blue-400 transition-colors",
+                "text-white hover:text-blue-400 transition-colors font-inter",
                 isActive('/habits') && "text-blue-400 bg-blue-500/20"
               )}
               onClick={() => navigate('/habits')}
@@ -78,17 +78,17 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
             <SoundButton 
               variant="ghost" 
               className={cn(
-                "text-white hover:text-blue-400 transition-colors",
+                "text-white hover:text-blue-400 transition-colors font-inter",
                 isActive('/pomodoro') && "text-blue-400 bg-blue-500/20"
               )}
               onClick={() => navigate('/pomodoro')}
             >
-              Pomodoro
+              Focus Timer
             </SoundButton>
             <SoundButton 
               variant="ghost" 
               className={cn(
-                "text-white hover:text-blue-400 transition-colors",
+                "text-white hover:text-blue-400 transition-colors font-inter",
                 isActive('/reminders') && "text-blue-400 bg-blue-500/20"
               )}
               onClick={() => navigate('/reminders')}
@@ -105,7 +105,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
                 <PopoverTrigger asChild>
                   <SoundButton 
                     variant="outline" 
-                    className="gap-2 bg-gradient-to-r from-blue-500/20 to-white/20 border-blue-400/30 text-white hover:from-blue-500/30 hover:to-white/30 backdrop-blur-sm shadow-xl"
+                    className="gap-2 bg-gradient-to-r from-blue-500/20 to-white/20 border-blue-400/30 text-white hover:from-blue-500/30 hover:to-white/30 backdrop-blur-sm shadow-xl font-inter"
                   >
                     <Calendar className="h-4 w-4" />
                     {format(selectedDate, 'MMM dd')}

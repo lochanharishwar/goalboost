@@ -126,7 +126,7 @@ const Dashboard = () => {
 
   return (
     <div className={cn(
-      "min-h-screen relative overflow-hidden transition-all duration-500",
+      "min-h-screen relative overflow-hidden transition-all duration-500 font-inter",
       isDarkMode 
         ? "bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900" 
         : "bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-100"
@@ -136,26 +136,26 @@ const Dashboard = () => {
         onToggleTheme={toggleTheme}
       />
 
-      <div className="relative max-w-7xl mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
-          <p className="text-gray-300">Your productivity at a glance</p>
+      <div className="relative max-w-7xl mx-auto px-6 py-10">
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3 font-inter">Welcome to GoalFlow</h1>
+          <p className="text-gray-300 text-lg font-inter">Transform your daily routine into meaningful achievements</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           <StatsCard
-            title="Today's Goals"
+            title="Today's Progress"
             value={completionRate}
             suffix="%"
-            description={`${completedTasks.length}/${todayTasks.length} completed`}
+            description={`${completedTasks.length}/${todayTasks.length} goals completed`}
             isDarkMode={isDarkMode}
           />
           <StatsCard
             title="This Week"
             value={weekCompleted}
             suffix=" goals"
-            description="Goals completed this week"
+            description="Weekly achievements"
             isDarkMode={isDarkMode}
           />
           <StatsCard
@@ -167,23 +167,23 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Date Selector */}
           <div className="lg:col-span-1">
-            <Card className="shadow-xl border-0 bg-black/30 backdrop-blur-xl border border-blue-500/20">
+            <Card className="shadow-2xl border-0 bg-black/20 backdrop-blur-xl border border-blue-500/20 font-inter">
               <CardHeader>
-                <CardTitle className="text-white text-lg flex items-center gap-2">
+                <CardTitle className="text-white text-lg flex items-center gap-2 font-inter">
                   <CalendarIcon className="h-5 w-5" />
                   Select Date
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <Popover open={calendarOpen} onOpenChange={set CalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal bg-black/20 border-blue-400/30 text-white hover:bg-black/30",
+                        "w-full justify-start text-left font-normal bg-black/30 border-blue-400/30 text-white hover:bg-black/40 h-12 font-inter",
                         !selectedDate && "text-gray-400"
                       )}
                     >
@@ -208,11 +208,11 @@ const Dashboard = () => {
                   </PopoverContent>
                 </Popover>
                 
-                <div className="mt-4 text-center">
-                  <p className="text-gray-300 text-sm">
-                    Setting goals for:
+                <div className="mt-6 text-center p-4 bg-blue-500/10 rounded-lg">
+                  <p className="text-gray-300 text-sm font-inter mb-1">
+                    Planning for:
                   </p>
-                  <p className="text-white font-medium">
+                  <p className="text-white font-semibold font-inter">
                     {format(selectedDate, 'EEEE, MMMM dd, yyyy')}
                   </p>
                 </div>
@@ -221,7 +221,7 @@ const Dashboard = () => {
           </div>
 
           {/* Goals for Selected Date */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-3">
             <GoalCard
               tasks={tasks}
               newTaskText={newTaskText}
