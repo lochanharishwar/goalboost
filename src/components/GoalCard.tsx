@@ -4,18 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle2, Circle, Trash2, Plus, Target, Flag, X, SkipForward, XCircle, Sparkles, ArrowRight, Lightbulb } from 'lucide-react';
+import { CheckCircle2, Circle, Trash2, Plus, Target, Flag, X, SkipForward, XCircle, Sparkles, ArrowRight, Lightbulb, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Task } from '@/types/task';
 import { SoundButton } from '@/components/SoundButton';
+import { getCategoryColor, getCategoryIcon } from '@/utils/achievementUtils';
 
 interface GoalCardProps {
   tasks: Task[];
   newTaskText: string;
   newTaskPriority: 'urgent' | 'daily' | 'long-term';
+  newTaskCategory: 'work' | 'personal' | 'health' | 'learning' | 'finance';
+  newTaskTime: string;
   selectedDate: string;
   onNewTaskChange: (text: string) => void;
   onNewTaskPriorityChange: (priority: 'urgent' | 'daily' | 'long-term') => void;
+  onNewTaskCategoryChange: (category: 'work' | 'personal' | 'health' | 'learning' | 'finance') => void;
+  onNewTaskTimeChange: (time: string) => void;
   onAddTask: () => void;
   onToggleTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => void;
@@ -28,9 +33,13 @@ export const GoalCard = ({
   tasks,
   newTaskText,
   newTaskPriority,
+  newTaskCategory,
+  newTaskTime,
   selectedDate,
   onNewTaskChange,
   onNewTaskPriorityChange,
+  onNewTaskCategoryChange,
+  onNewTaskTimeChange,
   onAddTask,
   onToggleTask,
   onDeleteTask,
@@ -60,10 +69,24 @@ export const GoalCard = ({
     return '';
   };
 
-  // Sort tasks by priority (urgent first)
+  // Sort tasks by priority (urgent first), then by time
   const sortedTasks = [...todayTasks].sort((a, b) => {
     const priorityOrder = { urgent: 0, daily: 1, 'long-term': 2 };
-    return priorityOrder[a.priority || 'daily'] - priorityOrder[b.priority || 'daily'];
+    const aPriority = priorityOrder[a.priority || 'daily'];
+    const bPriority = priorityOrder[b.priority || 'daily'];
+    
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+    
+    // If same priority, sort by time
+    if (a.dueTime && b.dueTime) {
+      return a.dueTime.localeCompare(b.dueTime);
+    }
+    if (a.dueTime && !b.dueTime) return -1;
+    if (!a.dueTime && b.dueTime) return 1;
+    
+    return 0;
   });
 
   const suggestionGoals = [
@@ -150,22 +173,55 @@ export const GoalCard = ({
             </SoundButton>
           </div>
 
-          <Select value={newTaskPriority} onValueChange={onNewTaskPriorityChange}>
-            <SelectTrigger className="bg-black/30 border-blue-400/30 text-white font-inter h-12 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20">
-              <SelectValue placeholder="Set priority" />
-            </SelectTrigger>
-            <SelectContent className="bg-black/90 border-blue-500/30 text-white font-inter">
-              <SelectItem value="urgent" className="text-red-300 hover:bg-red-500/10 font-inter cursor-pointer">
-                🚨 Urgent - Do First
-              </SelectItem>
-              <SelectItem value="daily" className="text-blue-300 hover:bg-blue-500/10 font-inter cursor-pointer">
-                📅 Daily - Regular Task
-              </SelectItem>
-              <SelectItem value="long-term" className="text-purple-300 hover:bg-purple-500/10 font-inter cursor-pointer">
-                🎯 Long-term - Future Focus
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Select value={newTaskPriority} onValueChange={onNewTaskPriorityChange}>
+              <SelectTrigger className="bg-black/30 border-blue-400/30 text-white font-inter h-12 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent className="bg-black/90 border-blue-500/30 text-white font-inter">
+                <SelectItem value="urgent" className="text-red-300 hover:bg-red-500/10 font-inter cursor-pointer">
+                  🚨 Urgent
+                </SelectItem>
+                <SelectItem value="daily" className="text-blue-300 hover:bg-blue-500/10 font-inter cursor-pointer">
+                  📅 Daily
+                </SelectItem>
+                <SelectItem value="long-term" className="text-purple-300 hover:bg-purple-500/10 font-inter cursor-pointer">
+                  🎯 Long-term
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={newTaskCategory} onValueChange={onNewTaskCategoryChange}>
+              <SelectTrigger className="bg-black/30 border-blue-400/30 text-white font-inter h-12 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent className="bg-black/90 border-blue-500/30 text-white font-inter">
+                <SelectItem value="work" className="text-blue-300 hover:bg-blue-500/10 font-inter cursor-pointer">
+                  💼 Work
+                </SelectItem>
+                <SelectItem value="personal" className="text-purple-300 hover:bg-purple-500/10 font-inter cursor-pointer">
+                  👤 Personal
+                </SelectItem>
+                <SelectItem value="health" className="text-green-300 hover:bg-green-500/10 font-inter cursor-pointer">
+                  🏥 Health
+                </SelectItem>
+                <SelectItem value="learning" className="text-yellow-300 hover:bg-yellow-500/10 font-inter cursor-pointer">
+                  📚 Learning
+                </SelectItem>
+                <SelectItem value="finance" className="text-emerald-300 hover:bg-emerald-500/10 font-inter cursor-pointer">
+                  💰 Finance
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Input
+              type="time"
+              value={newTaskTime}
+              onChange={(e) => onNewTaskTimeChange(e.target.value)}
+              placeholder="Due time (optional)"
+              className="bg-black/30 border-blue-400/30 text-white placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 h-12 px-4 font-inter"
+            />
+          </div>
         </div>
 
         {/* Enhanced Goals List */}
@@ -250,17 +306,38 @@ export const GoalCard = ({
                     {task.text}
                   </span>
                   
-                  {task.priority && (
-                    <Badge 
-                      className={cn(
-                        "text-xs px-2 py-1 border font-inter shadow-sm",
-                        getPriorityColor(task.priority)
-                      )}
-                    >
-                      <Flag className="h-3 w-3 mr-1" />
-                      {task.priority.toUpperCase()}
-                    </Badge>
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {task.priority && (
+                      <Badge 
+                        className={cn(
+                          "text-xs px-2 py-1 border font-inter shadow-sm",
+                          getPriorityColor(task.priority)
+                        )}
+                      >
+                        <Flag className="h-3 w-3 mr-1" />
+                        {task.priority.toUpperCase()}
+                      </Badge>
+                    )}
+                    
+                    {task.category && (
+                      <Badge 
+                        className={cn(
+                          "text-xs px-2 py-1 border font-inter shadow-sm",
+                          getCategoryColor(task.category)
+                        )}
+                      >
+                        <span className="mr-1">{getCategoryIcon(task.category)}</span>
+                        {task.category.toUpperCase()}
+                      </Badge>
+                    )}
+                    
+                    {task.dueTime && (
+                      <Badge className="text-xs px-2 py-1 border font-inter shadow-sm bg-orange-500/20 text-orange-300 border-orange-400/30">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {task.dueTime}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 
                 {!task.completed && !task.cancelled && (

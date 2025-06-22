@@ -6,21 +6,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Award } from 'lucide-react';
 import { GoalCard } from '@/components/GoalCard';
 import { StatsCard } from '@/components/StatsCard';
-import { Task } from '@/types/task';
+import { StreakTracker } from '@/components/StreakTracker';
+import { AchievementBadge } from '@/components/AchievementBadge';
+import { Task, UserStats } from '@/types/task';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useClickSound } from '@/utils/soundUtils';
+import { checkForNewAchievements, calculateStreak } from '@/utils/achievementUtils';
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState<'urgent' | 'daily' | 'long-term'>('daily');
+  const [newTaskCategory, setNewTaskCategory] = useState<'work' | 'personal' | 'health' | 'learning' | 'finance'>('personal');
+  const [newTaskTime, setNewTaskTime] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [userStats, setUserStats] = useState<UserStats>({
+    currentStreak: 0,
+    longestStreak: 0,
+    totalCompleted: 0,
+    achievements: []
+  });
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
 
@@ -31,6 +42,7 @@ const Dashboard = () => {
     try {
       const savedTasks = localStorage.getItem('goalflow-tasks');
       const savedTheme = localStorage.getItem('goalflow-theme');
+      const savedStats = localStorage.getItem('goalflow-stats');
       
       if (savedTasks) {
         const parsedTasks = JSON.parse(savedTasks);
@@ -40,13 +52,50 @@ const Dashboard = () => {
       if (savedTheme) {
         setIsDarkMode(savedTheme === 'dark');
       }
+
+      if (savedStats) {
+        setUserStats(JSON.parse(savedStats));
+      }
     } catch (error) {
       console.warn('Failed to load saved data:', error);
-      // Reset to empty state if corrupted
       localStorage.removeItem('goalflow-tasks');
       localStorage.removeItem('goalflow-theme');
+      localStorage.removeItem('goalflow-stats');
     }
   }, []);
+
+  // Update stats when tasks change
+  useEffect(() => {
+    if (tasks.length > 0) {
+      const streakData = calculateStreak(tasks);
+      const completedCount = tasks.filter(task => task.completed).length;
+      
+      const newStats: UserStats = {
+        currentStreak: streakData.current,
+        longestStreak: Math.max(streakData.longest, userStats.longestStreak),
+        totalCompleted: completedCount,
+        lastCompletionDate: streakData.lastDate,
+        achievements: userStats.achievements
+      };
+
+      // Check for new achievements
+      const newAchievements = checkForNewAchievements(tasks, newStats);
+      if (newAchievements.length > 0) {
+        newStats.achievements = [...newStats.achievements, ...newAchievements];
+        
+        // Show achievement notifications
+        newAchievements.forEach(achievement => {
+          toast({
+            title: `🏆 Achievement Unlocked!`,
+            description: `${achievement.icon} ${achievement.title}: ${achievement.description}`,
+          });
+        });
+      }
+
+      setUserStats(newStats);
+      localStorage.setItem('goalflow-stats', JSON.stringify(newStats));
+    }
+  }, [tasks]);
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
@@ -75,13 +124,16 @@ const Dashboard = () => {
         completed: false,
         date: selectedDateString,
         createdAt: new Date().toISOString(),
-        priority: newTaskPriority
+        priority: newTaskPriority,
+        category: newTaskCategory,
+        dueTime: newTaskTime || undefined
       };
       setTasks([...tasks, newTask]);
       setNewTaskText('');
+      setNewTaskTime('');
       toast({
         title: "🎯 Goal Added!",
-        description: `Goal added for ${format(selectedDate, 'MMM dd, yyyy')}`,
+        description: `Goal added for ${format(selectedDate, 'MMM dd, yyyy')}${newTaskTime ? ` at ${newTaskTime}` : ''}`,
       });
     }
   };
@@ -202,6 +254,44 @@ const Dashboard = () => {
           />
         </div>
 
+        {/* Streak Tracker and Recent Achievements */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
+          <div className="lg:col-span-2">
+            <StreakTracker stats={userStats} isDarkMode={isDarkMode} />
+          </div>
+          
+          <div className="lg:col-span-1">
+            <Card className="shadow-2xl border-0 bg-black/20 backdrop-blur-xl border border-purple-500/20">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-white text-lg flex items-center gap-2">
+                  <Award className="h-5 w-5 text-purple-400" />
+                  Achievements
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {userStats.achievements.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {userStats.achievements.slice(-4).map((achievement) => (
+                      <AchievementBadge
+                        key={achievement.id}
+                        achievement={achievement}
+                        size="sm"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <div className="text-4xl mb-2">🏆</div>
+                    <p className="text-gray-300 text-sm">
+                      Complete goals to unlock achievements!
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Date Selector - Enhanced Mobile Layout */}
@@ -266,9 +356,13 @@ const Dashboard = () => {
               tasks={tasks}
               newTaskText={newTaskText}
               newTaskPriority={newTaskPriority}
+              newTaskCategory={newTaskCategory}
+              newTaskTime={newTaskTime}
               selectedDate={selectedDateString}
               onNewTaskChange={setNewTaskText}
               onNewTaskPriorityChange={setNewTaskPriority}
+              onNewTaskCategoryChange={setNewTaskCategory}
+              onNewTaskTimeChange={setNewTaskTime}
               onAddTask={addTask}
               onToggleTask={toggleTask}
               onDeleteTask={deleteTask}
