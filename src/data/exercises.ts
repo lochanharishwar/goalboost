@@ -56,7 +56,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['None'],
     targetMuscles: ['Chest', 'Triceps', 'Shoulders', 'Core'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
     steps: [
       'Start in a plank position with hands slightly wider than shoulder-width apart',
       'Keep your body in a straight line from head to heels, engaging your core',
@@ -113,7 +113,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 8-12 reps per arm',
     equipment: ['Dumbbells', 'Bench'],
     targetMuscles: ['Latissimus dorsi', 'Rhomboids', 'Rear deltoids', 'Biceps'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
     steps: [
       'Place one knee and hand on a bench for support',
       'Hold a dumbbell in your opposite hand with your arm extended',
@@ -189,7 +189,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbell'],
     targetMuscles: ['Triceps'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=500&h=400&fit=crop',
     steps: [
       'Hold a dumbbell with both hands above your head',
       'Keep your elbows close to your head',
@@ -227,7 +227,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells', 'Bench'],
     targetMuscles: ['Chest', 'Front deltoids'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&h=400&fit=crop',
     steps: [
       'Lie on a bench holding dumbbells above your chest with arms extended',
       'Keep a slight bend in your elbows throughout the movement',
@@ -238,8 +238,103 @@ export const exercises: Exercise[] = [
     benefits: ['Isolates chest muscles', 'Improves chest definition', 'Increases range of motion'],
     tips: ['Don\'t go too heavy', 'Keep the arc motion smooth', 'Don\'t lower weights too far', 'Maintain the elbow bend']
   },
+  {
+    id: 'shoulder-raises',
+    name: 'Lateral Shoulder Raises',
+    category: 'upper-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 12-15 reps',
+    equipment: ['Dumbbells'],
+    targetMuscles: ['Deltoids', 'Trapezius'],
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with feet hip-width apart, holding dumbbells at your sides',
+      'Keep a slight bend in your elbows',
+      'Raise the weights out to your sides until they reach shoulder height',
+      'Hold for a moment at the top',
+      'Lower the weights back down with control'
+    ],
+    benefits: ['Builds shoulder width', 'Improves shoulder stability', 'Defines deltoids'],
+    tips: ['Don\'t lift above shoulder height', 'Control the movement', 'Don\'t use momentum', 'Keep your core engaged']
+  },
+  {
+    id: 'face-pulls',
+    name: 'Cable Face Pulls',
+    category: 'upper-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 12-15 reps',
+    equipment: ['Cable machine', 'Rope attachment'],
+    targetMuscles: ['Rear deltoids', 'Rhomboids', 'Middle trapezius'],
+    image: 'https://images.unsplash.com/photo-1566241477457-fa9280d17ba3?w=500&h=400&fit=crop',
+    steps: [
+      'Set the cable at face height with a rope attachment',
+      'Grab the rope with both hands, palms facing down',
+      'Step back to create tension in the cable',
+      'Pull the rope toward your face, separating your hands',
+      'Squeeze your shoulder blades together at the end'
+    ],
+    benefits: ['Improves posture', 'Strengthens rear delts', 'Balances pressing movements'],
+    tips: ['Keep your elbows high', 'Focus on squeezing shoulder blades', 'Don\'t use too much weight', 'Control the return']
+  },
+  {
+    id: 'hammer-curls',
+    name: 'Hammer Curls',
+    category: 'upper-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 10-12 reps',
+    equipment: ['Dumbbells'],
+    targetMuscles: ['Biceps', 'Brachialis', 'Forearms'],
+    image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with dumbbells at your sides, palms facing your body',
+      'Keep your elbows close to your torso',
+      'Curl the weights up while maintaining the neutral grip',
+      'Squeeze your biceps at the top',
+      'Lower the weights back down with control'
+    ],
+    benefits: ['Targets different part of biceps', 'Builds forearm strength', 'Improves grip strength'],
+    tips: ['Keep your wrists straight', 'Don\'t swing the weights', 'Control both phases of movement', 'Keep elbows stationary']
+  },
+  {
+    id: 'incline-press',
+    name: 'Incline Dumbbell Press',
+    category: 'upper-body',
+    difficulty: 'intermediate',
+    duration: '3 sets of 8-10 reps',
+    equipment: ['Dumbbells', 'Incline bench'],
+    targetMuscles: ['Upper chest', 'Front deltoids', 'Triceps'],
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    steps: [
+      'Set the bench to a 30-45 degree incline',
+      'Hold dumbbells at chest level with palms facing forward',
+      'Press the weights up and slightly forward',
+      'Squeeze your chest at the top',
+      'Lower the weights back to chest level with control'
+    ],
+    benefits: ['Targets upper chest', 'Builds pressing strength', 'Improves shoulder stability'],
+    tips: ['Don\'t set the incline too steep', 'Keep your back against the bench', 'Control the descent', 'Don\'t let weights drift apart']
+  },
+  {
+    id: 'cable-crossovers',
+    name: 'Cable Crossovers',
+    category: 'upper-body',
+    difficulty: 'intermediate',
+    duration: '3 sets of 12-15 reps',
+    equipment: ['Cable machine'],
+    targetMuscles: ['Chest', 'Front deltoids'],
+    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&h=400&fit=crop',
+    steps: [
+      'Set the cables at shoulder height or above',
+      'Grab the handles and step forward to create tension',
+      'Keep a slight bend in your elbows',
+      'Bring your hands together in front of your chest',
+      'Slowly return to the starting position'
+    ],
+    benefits: ['Isolates chest muscles', 'Constant tension', 'Great for definition'],
+    tips: ['Keep the movement smooth', 'Focus on the squeeze', 'Don\'t use excessive weight', 'Maintain elbow position']
+  },
 
-  // Lower Body Exercises (25 exercises)
+  // Lower Body Exercises (25+ exercises)
   {
     id: 'squats',
     name: 'Bodyweight Squats',
@@ -286,7 +381,7 @@ export const exercises: Exercise[] = [
     duration: '4 sets of 6-8 reps',
     equipment: ['Barbell', 'Weight plates'],
     targetMuscles: ['Hamstrings', 'Glutes', 'Lower back', 'Core'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=500&h=400&fit=crop',
     steps: [
       'Stand with feet hip-width apart, holding a barbell with an overhand grip',
       'Keep your knees slightly bent and back straight',
@@ -305,7 +400,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 15-20 reps',
     equipment: ['None'],
     targetMuscles: ['Calves', 'Achilles tendon'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&h=400&fit=crop',
     steps: [
       'Stand with feet hip-width apart, toes pointing forward',
       'Rise up onto your toes by contracting your calf muscles',
@@ -324,7 +419,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['None'],
     targetMuscles: ['Glutes', 'Hamstrings', 'Core'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with knees bent and feet flat on the floor',
       'Place your arms at your sides for stability',
@@ -343,7 +438,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 10-12 reps per leg',
     equipment: ['Step', 'Box', 'Bench'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Calves'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Stand in front of a step or box',
       'Place one foot completely on the step',
@@ -362,7 +457,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 30-60 seconds',
     equipment: ['Wall'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Core'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=500&h=400&fit=crop',
     steps: [
       'Stand with your back against a wall',
       'Slide down until your thighs are parallel to the floor',
@@ -400,7 +495,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 8-12 reps per leg',
     equipment: ['Bench', 'Chair'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Hamstrings'],
-    image: 'https://images.unsplash.com/photo-1566241440091-ec10de8db2e1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=500&h=400&fit=crop',
     steps: [
       'Stand 2-3 feet in front of a bench or chair',
       'Place the top of one foot behind you on the bench',
@@ -419,7 +514,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 3-8 reps per leg',
     equipment: ['None'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Core', 'Balance'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=500&h=400&fit=crop',
     steps: [
       'Stand on one leg with the other leg extended straight out in front',
       'Keep your extended leg parallel to the ground',
@@ -430,8 +525,103 @@ export const exercises: Exercise[] = [
     benefits: ['Advanced unilateral strength', 'Improves balance and flexibility', 'Functional movement'],
     tips: ['Start with assisted versions', 'Work on flexibility first', 'Keep your core engaged', 'Practice on each leg equally']
   },
+  {
+    id: 'goblet-squats',
+    name: 'Goblet Squats',
+    category: 'lower-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 10-15 reps',
+    equipment: ['Dumbbell', 'Kettlebell'],
+    targetMuscles: ['Quadriceps', 'Glutes', 'Core'],
+    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    steps: [
+      'Hold a dumbbell or kettlebell at chest level',
+      'Stand with feet slightly wider than shoulder-width',
+      'Lower into a squat while keeping the weight at chest level',
+      'Keep your elbows pointing down',
+      'Drive through your heels to return to standing'
+    ],
+    benefits: ['Teaches proper squat form', 'Builds leg strength', 'Core engagement'],
+    tips: ['Keep your chest up', 'Don\'t let your knees cave in', 'Go as deep as comfortable', 'Control the movement']
+  },
+  {
+    id: 'reverse-lunges',
+    name: 'Reverse Lunges',
+    category: 'lower-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 10-12 reps per leg',
+    equipment: ['None'],
+    targetMuscles: ['Quadriceps', 'Glutes', 'Hamstrings'],
+    image: 'https://images.unsplash.com/photo-1609013489669-4b23b4fc9e25?w=500&h=400&fit=crop',
+    steps: [
+      'Stand tall with feet hip-width apart',
+      'Step backward with one leg',
+      'Lower your hips until both knees are at 90 degrees',
+      'Push off your back foot to return to starting position',
+      'Alternate legs or complete all reps on one side first'
+    ],
+    benefits: ['Easier on knees than forward lunges', 'Builds unilateral strength', 'Improves balance'],
+    tips: ['Step straight back', 'Don\'t let your front knee drift forward', 'Keep your torso upright', 'Control the descent']
+  },
+  {
+    id: 'single-leg-deadlifts',
+    name: 'Single Leg Deadlifts',
+    category: 'lower-body',
+    difficulty: 'intermediate',
+    duration: '3 sets of 8-10 reps per leg',
+    equipment: ['None', 'Dumbbells (optional)'],
+    targetMuscles: ['Hamstrings', 'Glutes', 'Core', 'Balance'],
+    image: 'https://images.unsplash.com/photo-1566241522760-7c87c8e0e2e9?w=500&h=400&fit=crop',
+    steps: [
+      'Stand on one leg with a slight bend in the knee',
+      'Hinge at the hip and lower your torso',
+      'Extend your free leg behind you for balance',
+      'Keep your back straight throughout the movement',
+      'Return to the starting position and repeat'
+    ],
+    benefits: ['Improves balance', 'Strengthens hamstrings and glutes', 'Core stability'],
+    tips: ['Start without weight', 'Keep your hips square', 'Don\'t rush the movement', 'Use a wall for balance if needed']
+  },
+  {
+    id: 'sumo-squats',
+    name: 'Sumo Squats',
+    category: 'lower-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 12-15 reps',
+    equipment: ['None', 'Dumbbell (optional)'],
+    targetMuscles: ['Quadriceps', 'Glutes', 'Inner thighs', 'Calves'],
+    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with feet wider than shoulder-width, toes pointed out',
+      'Keep your chest up and core engaged',
+      'Lower by bending your knees and pushing hips back',
+      'Go down until thighs are parallel to the floor',
+      'Push through your heels to return to starting position'
+    ],
+    benefits: ['Targets inner thighs', 'Different squat variation', 'Improves hip mobility'],
+    tips: ['Keep your knees in line with your toes', 'Don\'t let knees cave inward', 'Squeeze glutes at the top', 'Hold a weight for added resistance']
+  },
+  {
+    id: 'lateral-lunges',
+    name: 'Lateral Lunges',
+    category: 'lower-body',
+    difficulty: 'beginner',
+    duration: '3 sets of 10-12 reps per side',
+    equipment: ['None'],
+    targetMuscles: ['Quadriceps', 'Glutes', 'Inner thighs', 'Outer thighs'],
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with feet hip-width apart',
+      'Take a large step to one side',
+      'Lower your body toward the stepping leg',
+      'Keep the other leg straight',
+      'Push off the stepping leg to return to center'
+    ],
+    benefits: ['Works in different plane of motion', 'Targets inner and outer thighs', 'Improves hip mobility'],
+    tips: ['Keep your chest up', 'Don\'t let your knee cave inward', 'Keep the straight leg extended', 'Shift your weight to the stepping leg']
+  },
 
-  // Core Exercises (15 exercises)
+  // Core Exercises (15+ exercises)
   {
     id: 'plank',
     name: 'Plank',
@@ -478,7 +668,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 15-20 reps',
     equipment: ['None'],
     targetMuscles: ['Rectus abdominis', 'Core'],
-    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with knees bent and feet flat on the floor',
       'Place your hands behind your head or crossed over your chest',
@@ -497,7 +687,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 20 reps per side',
     equipment: ['None'],
     targetMuscles: ['Obliques', 'Rectus abdominis', 'Hip flexors'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with hands behind your head',
       'Lift your shoulder blades off the ground',
@@ -516,7 +706,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 20 reps per side',
     equipment: ['None'],
     targetMuscles: ['Obliques', 'Core', 'Hip flexors'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616279969376-6e8d8b4b6e3c?w=500&h=400&fit=crop',
     steps: [
       'Sit on the ground with knees bent and feet slightly lifted',
       'Lean back to create a V-shape with your torso and thighs',
@@ -535,7 +725,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['None'],
     targetMuscles: ['Lower abs', 'Hip flexors', 'Core'],
-    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1611672585731-fa10603fb9e5?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with legs straight and arms at your sides',
       'Keep your lower back pressed against the ground',
@@ -573,7 +763,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 20-45 seconds per side',
     equipment: ['None'],
     targetMuscles: ['Obliques', 'Core', 'Shoulders'],
-    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
     steps: [
       'Lie on your side with your forearm on the ground',
       'Stack your feet and lift your hips off the ground',
@@ -592,7 +782,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 15-30 seconds',
     equipment: ['None'],
     targetMuscles: ['Core', 'Hip flexors'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with arms extended overhead',
       'Press your lower back into the ground',
@@ -611,7 +801,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['None'],
     targetMuscles: ['Core', 'Hip flexors', 'Rectus abdominis'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=500&h=400&fit=crop',
     steps: [
       'Lie on your back with arms extended overhead',
       'Simultaneously lift your legs and torso',
@@ -622,8 +812,103 @@ export const exercises: Exercise[] = [
     benefits: ['Full core workout', 'Challenges coordination', 'Advanced core strength'],
     tips: ['Don\'t use momentum', 'Focus on using your abs', 'Keep your legs straight', 'Control both phases']
   },
+  {
+    id: 'bear-crawl',
+    name: 'Bear Crawl',
+    category: 'core',
+    difficulty: 'intermediate',
+    duration: '3 sets of 30 seconds',
+    equipment: ['None'],
+    targetMuscles: ['Core', 'Shoulders', 'Arms', 'Legs'],
+    image: 'https://images.unsplash.com/photo-1520877880798-5ee002af2c65?w=500&h=400&fit=crop',
+    steps: [
+      'Start on hands and knees with knees slightly off the ground',
+      'Keep your back straight and core engaged',
+      'Move forward by stepping opposite hand and foot',
+      'Keep your knees close to the ground',
+      'Continue crawling forward, then reverse'
+    ],
+    benefits: ['Full-body stability', 'Coordination', 'Core strength', 'Functional movement'],
+    tips: ['Keep your knees low', 'Move slowly and controlled', 'Keep your back straight', 'Engage your core']
+  },
+  {
+    id: 'flutter-kicks',
+    name: 'Flutter Kicks',
+    category: 'core',
+    difficulty: 'beginner',
+    duration: '3 sets of 30 seconds',
+    equipment: ['None'],
+    targetMuscles: ['Lower abs', 'Hip flexors', 'Core'],
+    image: 'https://images.unsplash.com/photo-1611672585731-fa10603fb9e5?w=500&h=400&fit=crop',
+    steps: [
+      'Lie on your back with legs extended',
+      'Place your hands under your lower back for support',
+      'Lift your legs slightly off the ground',
+      'Alternate lifting each leg in small, quick movements',
+      'Keep your core engaged throughout'
+    ],
+    benefits: ['Targets lower abs', 'Improves endurance', 'Simple and effective'],
+    tips: ['Keep movements small and controlled', 'Don\'t let your back arch', 'Breathe steadily', 'Keep legs low']
+  },
+  {
+    id: 'wood-chops',
+    name: 'Wood Chops',
+    category: 'core',
+    difficulty: 'intermediate',
+    duration: '3 sets of 10-12 reps per side',
+    equipment: ['Medicine ball', 'Dumbbell'],
+    targetMuscles: ['Obliques', 'Core', 'Shoulders'],
+    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with feet shoulder-width apart, holding a weight',
+      'Start with the weight at one shoulder',
+      'Rotate your torso and bring the weight down across your body',
+      'End with the weight at the opposite hip',
+      'Control the movement back to the starting position'
+    ],
+    benefits: ['Rotational core strength', 'Functional movement', 'Improves athletic performance'],
+    tips: ['Use your core to rotate', 'Keep your arms extended', 'Control both directions', 'Don\'t use just your arms']
+  },
+  {
+    id: 'reverse-crunches',
+    name: 'Reverse Crunches',
+    category: 'core',
+    difficulty: 'beginner',
+    duration: '3 sets of 12-15 reps',
+    equipment: ['None'],
+    targetMuscles: ['Lower abs', 'Core'],
+    image: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=500&h=400&fit=crop',
+    steps: [
+      'Lie on your back with knees bent at 90 degrees',
+      'Place your hands at your sides or behind your head',
+      'Lift your hips off the ground by contracting your lower abs',
+      'Bring your knees toward your chest',
+      'Lower back down with control'
+    ],
+    benefits: ['Targets lower abs', 'Less strain on neck', 'Good for beginners'],
+    tips: ['Focus on lifting with your abs', 'Don\'t use momentum', 'Keep movements controlled', 'Breathe out as you lift']
+  },
+  {
+    id: 'hanging-knee-raises',
+    name: 'Hanging Knee Raises',
+    category: 'core',
+    difficulty: 'advanced',
+    duration: '3 sets of 8-12 reps',
+    equipment: ['Pull-up bar'],
+    targetMuscles: ['Lower abs', 'Hip flexors', 'Grip strength'],
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    steps: [
+      'Hang from a pull-up bar with arms extended',
+      'Keep your shoulders engaged and core tight',
+      'Lift your knees toward your chest',
+      'Control the movement at the top',
+      'Lower your legs back down with control'
+    ],
+    benefits: ['Advanced core exercise', 'Builds grip strength', 'Targets lower abs effectively'],
+    tips: ['Don\'t swing your body', 'Control the movement', 'Engage your lats', 'Start with bent knees']
+  },
 
-  // Cardio Exercises (12 exercises)
+  // Cardio Exercises (12+ exercises)
   {
     id: 'jumping-jacks',
     name: 'Jumping Jacks',
@@ -651,7 +936,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 30 seconds',
     equipment: ['None'],
     targetMuscles: ['Hip flexors', 'Quadriceps', 'Calves', 'Core'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616279969376-6e8d8b4b6e3c?w=500&h=400&fit=crop',
     steps: [
       'Stand with feet hip-width apart',
       'Run in place while lifting your knees as high as possible',
@@ -670,7 +955,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 30 seconds',
     equipment: ['None'],
     targetMuscles: ['Hamstrings', 'Glutes', 'Calves', 'Cardiovascular system'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1611672585731-fa10603fb9e5?w=500&h=400&fit=crop',
     steps: [
       'Stand with feet hip-width apart',
       'Run in place while kicking your heels toward your glutes',
@@ -689,7 +974,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 5-10 reps',
     equipment: ['None'],
     targetMuscles: ['Full body', 'Cardiovascular system'],
-    image: 'https://images.unsplash.com/photo-1520877880798-5ee002af2c65?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=500&h=400&fit=crop',
     steps: [
       'Start standing with feet shoulder-width apart',
       'Squat down and place hands on the floor',
@@ -728,7 +1013,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['Plyo box', 'Bench', 'Step'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Calves', 'Core'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1566241477457-fa9280d17ba3?w=500&h=400&fit=crop',
     steps: [
       'Stand facing a sturdy box or platform',
       'Bend your knees and swing your arms back',
@@ -747,7 +1032,7 @@ export const exercises: Exercise[] = [
     duration: '8 rounds of 30 seconds sprint, 30 seconds rest',
     equipment: ['None'],
     targetMuscles: ['Full body', 'Cardiovascular system'],
-    image: 'https://images.unsplash.com/photo-1520877880798-5ee002af2c65?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=500&h=400&fit=crop',
     steps: [
       'Warm up with light jogging for 5 minutes',
       'Sprint at maximum effort for 30 seconds',
@@ -785,7 +1070,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 20 reps per side',
     equipment: ['None'],
     targetMuscles: ['Glutes', 'Quadriceps', 'Core', 'Calves'],
-    image: 'https://images.unsplash.com/photo-1566241440091-ec10de8db2e1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1548690312-e3b507d8c110?w=500&h=400&fit=crop',
     steps: [
       'Start standing on your right leg with left leg behind you',
       'Leap to the left, landing on your left leg',
@@ -804,7 +1089,7 @@ export const exercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['None'],
     targetMuscles: ['Quadriceps', 'Glutes', 'Core', 'Hip flexors'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1566241440091-ec10de8db2e1?w=500&h=400&fit=crop',
     steps: [
       'Stand with feet shoulder-width apart',
       'Jump up as high as possible',
@@ -815,8 +1100,46 @@ export const exercises: Exercise[] = [
     benefits: ['Builds explosive power', 'Improves jumping ability', 'High-intensity cardio'],
     tips: ['Jump as high as possible', 'Pull your knees up quickly', 'Land softly', 'Rest between sets if needed']
   },
+  {
+    id: 'battle-ropes',
+    name: 'Battle Ropes',
+    category: 'cardio',
+    difficulty: 'intermediate',
+    duration: '3 sets of 30 seconds',
+    equipment: ['Battle ropes'],
+    targetMuscles: ['Arms', 'Shoulders', 'Core', 'Cardiovascular system'],
+    image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500&h=400&fit=crop',
+    steps: [
+      'Hold the rope ends with both hands',
+      'Stand with feet shoulder-width apart',
+      'Create waves by moving your arms up and down alternately',
+      'Keep your core engaged throughout',
+      'Maintain a steady, intense pace'
+    ],
+    benefits: ['High-intensity cardio', 'Upper body strength', 'Core engagement', 'Burns calories fast'],
+    tips: ['Keep your knees slightly bent', 'Use your whole body', 'Don\'t let the intensity drop', 'Breathe steadily']
+  },
+  {
+    id: 'stair-climbing',
+    name: 'Stair Climbing',
+    category: 'cardio',
+    difficulty: 'beginner',
+    duration: '3 sets of 2-3 minutes',
+    equipment: ['Stairs', 'Step platform'],
+    targetMuscles: ['Quadriceps', 'Glutes', 'Calves', 'Cardiovascular system'],
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    steps: [
+      'Find a set of stairs or use a step platform',
+      'Step up with one foot, then the other',
+      'Step down with control',
+      'Maintain a steady pace throughout',
+      'Use the handrail for balance if needed'
+    ],
+    benefits: ['Great cardio workout', 'Builds leg strength', 'Accessible exercise', 'Functional movement'],
+    tips: ['Keep your posture upright', 'Step with your whole foot', 'Control your descent', 'Start slowly and build intensity']
+  },
 
-  // Flexibility Exercises (10 exercises)
+  // Flexibility Exercises (10+ exercises)
   {
     id: 'child-pose',
     name: 'Child\'s Pose',
@@ -863,7 +1186,7 @@ export const exercises: Exercise[] = [
     duration: 'Hold for 30-60 seconds per side',
     equipment: ['Yoga mat (optional)'],
     targetMuscles: ['Hip flexors', 'Glutes', 'Piriformis'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1506629905260-f424dab3c758?w=500&h=400&fit=crop',
     steps: [
       'Start in a downward dog position',
       'Bring your right knee forward behind your right wrist',
@@ -920,7 +1243,7 @@ export const exercises: Exercise[] = [
     duration: 'Hold for 30-45 seconds per leg',
     equipment: ['None'],
     targetMuscles: ['Hamstrings', 'Calves'],
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=500&h=400&fit=crop',
     steps: [
       'Sit on the ground with one leg extended straight',
       'Bend your other leg with foot against your inner thigh',
@@ -939,7 +1262,7 @@ export const exercises: Exercise[] = [
     duration: 'Hold for 20-30 seconds per arm',
     equipment: ['None'],
     targetMuscles: ['Shoulders', 'Upper back'],
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
     steps: [
       'Stand or sit with good posture',
       'Bring your right arm across your body',
@@ -958,7 +1281,7 @@ export const exercises: Exercise[] = [
     duration: 'Hold for 20-30 seconds per side',
     equipment: ['None'],
     targetMuscles: ['Spine', 'Obliques', 'Hips'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
     steps: [
       'Sit with your legs extended in front of you',
       'Bend your right knee and place your foot outside your left thigh',
@@ -996,9 +1319,9 @@ export const exercises: Exercise[] = [
     duration: 'Hold for 30-60 seconds',
     equipment: ['None'],
     targetMuscles: ['Inner thighs', 'Hips', 'Groin'],
-    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=500&h=400&fit=crop',
     steps: [
-      'sit with the soles of your feet together',
+      'Sit with the soles of your feet together',
       'Hold your feet with your hands',
       'Gently pull your heels toward your body',
       'Sit up tall and lean forward slightly',
@@ -1006,5 +1329,43 @@ export const exercises: Exercise[] = [
     ],
     benefits: ['Improves hip flexibility', 'Stretches inner thighs', 'Improves posture when sitting'],
     tips: ['Don\'t push your knees down forcefully', 'Keep your back straight', 'Breathe deeply', 'Be patient with the stretch']
+  },
+  {
+    id: 'warrior-pose',
+    name: 'Warrior I Pose',
+    category: 'flexibility',
+    difficulty: 'beginner',
+    duration: 'Hold for 30-45 seconds per side',
+    equipment: ['Yoga mat (optional)'],
+    targetMuscles: ['Hip flexors', 'Quadriceps', 'Shoulders'],
+    image: 'https://images.unsplash.com/photo-1506629905260-f424dab3c758?w=500&h=400&fit=crop',
+    steps: [
+      'Start in a lunge position with your right foot forward',
+      'Turn your left foot out at a 45-degree angle',
+      'Raise your arms overhead',
+      'Square your hips toward the front',
+      'Hold the position and breathe deeply'
+    ],
+    benefits: ['Stretches hip flexors', 'Builds leg strength', 'Improves balance', 'Opens chest and shoulders'],
+    tips: ['Keep your front knee over your ankle', 'Ground through both feet', 'Lift through your arms', 'Don\'t let your front knee cave in']
+  },
+  {
+    id: 'triangle-pose',
+    name: 'Triangle Pose',
+    category: 'flexibility',
+    difficulty: 'intermediate',
+    duration: 'Hold for 30-45 seconds per side',
+    equipment: ['Yoga mat (optional)'],
+    targetMuscles: ['Hamstrings', 'Hip flexors', 'Sides of torso'],
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
+    steps: [
+      'Stand with feet wide apart',
+      'Turn your right foot out 90 degrees',
+      'Reach toward your right foot with your right hand',
+      'Place your hand on your shin, ankle, or the floor',
+      'Extend your left arm toward the ceiling'
+    ],
+    benefits: ['Stretches hamstrings and sides', 'Improves balance', 'Opens chest and shoulders'],
+    tips: ['Don\'t force the reach', 'Keep both legs straight', 'Look up at your top hand if comfortable', 'Use a block under your hand if needed']
   }
 ];
