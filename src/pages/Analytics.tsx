@@ -16,10 +16,35 @@ const Analytics = () => {
   const { playClickSound } = useClickSound();
 
   useEffect(() => {
-    const savedTasks = localStorage.getItem('aspiraTasks');
+    const savedTasks = localStorage.getItem('goalflow-tasks');
     if (savedTasks) {
       setTasks(JSON.parse(savedTasks));
     }
+
+    // Listen for localStorage changes to update in real-time
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'goalflow-tasks' && e.newValue) {
+        setTasks(JSON.parse(e.newValue));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also listen for changes within the same tab
+    const handleLocalUpdate = () => {
+      const updatedTasks = localStorage.getItem('goalflow-tasks');
+      if (updatedTasks) {
+        setTasks(JSON.parse(updatedTasks));
+      }
+    };
+
+    // Check for updates every second (for same-tab updates)
+    const interval = setInterval(handleLocalUpdate, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   const toggleTheme = () => {
