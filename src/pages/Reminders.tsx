@@ -281,9 +281,37 @@ const Reminders = () => {
                 </div>
                 <Button 
                   onClick={() => {
-                    Notification.requestPermission().then(permission => {
-                      setNotificationPermission(permission);
-                    });
+                    playClickSound();
+                    if ('Notification' in window) {
+                      Notification.requestPermission().then(permission => {
+                        setNotificationPermission(permission);
+                        if (permission === 'granted') {
+                          toast({
+                            title: "🔔 Notifications Enabled!",
+                            description: "You'll now receive device alarms for your reminders.",
+                          });
+                        } else if (permission === 'denied') {
+                          toast({
+                            title: "❌ Notifications Blocked",
+                            description: "Please enable notifications in your browser settings.",
+                            variant: "destructive",
+                          });
+                        }
+                      }).catch(error => {
+                        console.error('Error requesting notification permission:', error);
+                        toast({
+                          title: "⚠️ Permission Error",
+                          description: "Unable to request notification permission.",
+                          variant: "destructive",
+                        });
+                      });
+                    } else {
+                      toast({
+                        title: "❌ Not Supported",
+                        description: "Notifications are not supported in this browser.",
+                        variant: "destructive",
+                      });
+                    }
                   }}
                   size="sm"
                   className="bg-amber-500 hover:bg-amber-600 text-black font-inter"
