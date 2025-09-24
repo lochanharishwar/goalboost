@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Plus, Trash2, Clock } from 'lucide-react';
+import { Bell, Plus, Trash2, Clock, Smartphone, BellRing } from 'lucide-react';
 import { SoundButton } from '@/components/SoundButton';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ interface Reminder {
   time: string;
   isActive: boolean;
   createdAt: string;
+  hasDeviceAlarm: boolean;
 }
 
 const Reminders = () => {
@@ -24,18 +25,34 @@ const Reminders = () => {
   const [newReminderText, setNewReminderText] = useState('');
   const [newReminderTime, setNewReminderTime] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
 
-  // Enhanced localStorage with error handling
+  // Request notification permissions and load saved data
   useEffect(() => {
+    // Request notification permission
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+      if (Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          setNotificationPermission(permission);
+        });
+      }
+    }
+
     try {
       const savedReminders = localStorage.getItem('goalflow-reminders');
       const savedTheme = localStorage.getItem('goalflow-theme');
       
       if (savedReminders) {
         const parsedReminders = JSON.parse(savedReminders);
-        setReminders(Array.isArray(parsedReminders) ? parsedReminders : []);
+        // Add hasDeviceAlarm property to existing reminders if missing
+        const migratedReminders = parsedReminders.map((reminder: any) => ({
+          ...reminder,
+          hasDeviceAlarm: reminder.hasDeviceAlarm ?? false
+        }));
+        setReminders(Array.isArray(migratedReminders) ? migratedReminders : []);
       }
       
       if (savedTheme) {
@@ -66,7 +83,16 @@ const Reminders = () => {
     }
   }, [isDarkMode]);
 
+  // Schedule device notifications for active reminders
   useEffect(() => {
+    const scheduleNotifications = () => {
+      reminders.forEach(reminder => {
+        if (reminder.isActive && reminder.hasDeviceAlarm) {
+          scheduleDeviceNotification(reminder);
+        }
+      });
+    };
+
     const checkReminders = () => {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
@@ -74,18 +100,71 @@ const Reminders = () => {
       reminders.forEach(reminder => {
         if (reminder.isActive && reminder.time === currentTime) {
           playBellSound();
+          
+          // Show toast notification
           toast({
             title: "🔔 Reminder!",
             description: reminder.text,
             duration: 5000,
           });
+
+          // Show native notification if permitted
+          if (notificationPermission === 'granted' && reminder.hasDeviceAlarm) {
+            showNativeNotification(reminder);
+          }
         }
       });
     };
 
+    scheduleNotifications();
     const interval = setInterval(checkReminders, 60000);
     return () => clearInterval(interval);
-  }, [reminders, toast]);
+  }, [reminders, toast, notificationPermission]);
+
+  // Native notification functions
+  const scheduleDeviceNotification = (reminder: Reminder) => {
+    if (notificationPermission !== 'granted') return;
+
+    const [hours, minutes] = reminder.time.split(':').map(Number);
+    const now = new Date();
+    const scheduledTime = new Date();
+    scheduledTime.setHours(hours, minutes, 0, 0);
+
+    // If the time has passed today, schedule for tomorrow
+    if (scheduledTime <= now) {
+      scheduledTime.setDate(scheduledTime.getDate() + 1);
+    }
+
+    const timeUntilReminder = scheduledTime.getTime() - now.getTime();
+
+    if (timeUntilReminder > 0) {
+      setTimeout(() => {
+        showNativeNotification(reminder);
+      }, timeUntilReminder);
+    }
+  };
+
+  const showNativeNotification = (reminder: Reminder) => {
+    if ('Notification' in window && notificationPermission === 'granted') {
+      const notification = new Notification('🔔 GoalBoost Reminder', {
+        body: reminder.text,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        tag: reminder.id,
+        requireInteraction: true
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+
+      // Auto close after 30 seconds
+      setTimeout(() => {
+        notification.close();
+      }, 30000);
+    }
+  };
 
   const addReminder = () => {
     if (newReminderText.trim() && newReminderTime) {
@@ -95,15 +174,22 @@ const Reminders = () => {
         text: newReminderText.trim(),
         time: newReminderTime,
         isActive: true,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        hasDeviceAlarm: notificationPermission === 'granted'
       };
       setReminders([...reminders, newReminder]);
       setNewReminderText('');
       setNewReminderTime('');
+      
       toast({
         title: "⏰ Reminder Set!",
-        description: `Reminder set for ${newReminderTime}`,
+        description: `Reminder set for ${newReminderTime}${notificationPermission === 'granted' ? ' with device alarm' : ''}`,
       });
+
+      // Schedule the device notification
+      if (notificationPermission === 'granted') {
+        scheduleDeviceNotification(newReminder);
+      }
     }
   };
 
@@ -114,6 +200,28 @@ const Reminders = () => {
         ? { ...reminder, isActive: !reminder.isActive }
         : reminder
     ));
+  };
+
+  const toggleDeviceAlarm = (reminderId: string) => {
+    playClickSound();
+    if (notificationPermission !== 'granted') {
+      Notification.requestPermission().then(permission => {
+        setNotificationPermission(permission);
+        if (permission === 'granted') {
+          setReminders(reminders.map(reminder =>
+            reminder.id === reminderId 
+              ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
+              : reminder
+          ));
+        }
+      });
+    } else {
+      setReminders(reminders.map(reminder =>
+        reminder.id === reminderId 
+          ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
+          : reminder
+      ));
+    }
   };
 
   const deleteReminder = (reminderId: string) => {
@@ -159,12 +267,46 @@ const Reminders = () => {
           </p>
         </div>
 
+        {/* Notification Permission Banner */}
+        {notificationPermission !== 'granted' && (
+          <Card className="mb-6 shadow-2xl border-0 bg-amber-500/10 backdrop-blur-xl border border-amber-500/30 font-inter">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <BellRing className="h-5 w-5 text-amber-400 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-amber-200 font-medium font-inter">Enable Device Alarms</p>
+                  <p className="text-amber-300/80 text-sm font-inter">
+                    Allow notifications to receive reminders even when the app is closed.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    Notification.requestPermission().then(permission => {
+                      setNotificationPermission(permission);
+                    });
+                  }}
+                  size="sm"
+                  className="bg-amber-500 hover:bg-amber-600 text-black font-inter"
+                >
+                  Enable
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Add New Reminder */}
         <Card className="mb-8 shadow-2xl border-0 bg-black/20 backdrop-blur-xl border border-purple-500/20 font-inter">
           <CardHeader className="pb-4">
             <CardTitle className="text-white flex items-center gap-2 font-inter text-lg">
               <Bell className="h-5 w-5" />
               Add New Reminder
+              {notificationPermission === 'granted' && (
+                <Badge className="bg-green-500/20 text-green-300 border-green-400/30 font-inter text-xs">
+                  <Smartphone className="h-3 w-3 mr-1" />
+                  Device Alarms Enabled
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -227,20 +369,41 @@ const Reminders = () => {
                         )}>
                           {reminder.text}
                         </p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 font-inter">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {reminder.time}
-                          </Badge>
-                          <Badge className={cn(
-                            "font-inter",
-                            reminder.isActive 
-                              ? "bg-green-500/20 text-green-300 border-green-400/30"
-                              : "bg-gray-500/20 text-gray-300 border-gray-400/30"
-                          )}>
-                            {reminder.isActive ? 'Active' : 'Paused'}
-                          </Badge>
-                        </div>
+                         <div className="flex items-center gap-2 mt-1 flex-wrap">
+                           <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 font-inter">
+                             <Clock className="h-3 w-3 mr-1" />
+                             {reminder.time}
+                           </Badge>
+                           <Badge className={cn(
+                             "font-inter",
+                             reminder.isActive 
+                               ? "bg-green-500/20 text-green-300 border-green-400/30"
+                               : "bg-gray-500/20 text-gray-300 border-gray-400/30"
+                           )}>
+                             {reminder.isActive ? 'Active' : 'Paused'}
+                           </Badge>
+                           <Badge 
+                             className={cn(
+                               "cursor-pointer transition-all duration-200 font-inter",
+                               reminder.hasDeviceAlarm && notificationPermission === 'granted'
+                                 ? "bg-blue-500/20 text-blue-300 border-blue-400/30 hover:bg-blue-500/30"
+                                 : "bg-gray-500/20 text-gray-400 border-gray-400/30 hover:bg-gray-500/30"
+                             )}
+                             onClick={() => toggleDeviceAlarm(reminder.id)}
+                           >
+                             {reminder.hasDeviceAlarm && notificationPermission === 'granted' ? (
+                               <>
+                                 <Smartphone className="h-3 w-3 mr-1" />
+                                 Device Alarm
+                               </>
+                             ) : (
+                               <>
+                                 <BellRing className="h-3 w-3 mr-1" />
+                                 Enable Alarm
+                               </>
+                             )}
+                           </Badge>
+                         </div>
                       </div>
                     </div>
                     
