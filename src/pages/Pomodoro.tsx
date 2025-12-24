@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Pause, RotateCcw, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, PictureInPicture2 } from 'lucide-react';
 import { SoundButton } from '@/components/SoundButton';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -15,10 +15,13 @@ const Pomodoro = () => {
   const [breakTime, setBreakTime] = useState(5);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [isPiPActive, setIsPiPActive] = useState(false);
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const tickIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pipWindowRef = useRef<Window | null>(null);
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Initialize timer with work time
   useEffect(() => {
@@ -140,6 +143,142 @@ const Pomodoro = () => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Update PiP canvas when time changes
+  const updatePiPCanvas = useCallback(() => {
+    if (!pipCanvasRef.current || !pipWindowRef.current) return;
+    
+    const canvas = pipCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.fillStyle = mode === 'work' ? '#064e3b' : '#134e4a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw progress ring
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2 - 10;
+    const radius = 60;
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+    ctx.lineWidth = 8;
+    ctx.stroke();
+
+    const currentProgress = mode === 'work' 
+      ? ((workTime * 60 - timeLeft) / (workTime * 60))
+      : ((breakTime * 60 - timeLeft) / (breakTime * 60));
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + (currentProgress * Math.PI * 2));
+    ctx.strokeStyle = mode === 'work' ? '#10b981' : '#14b8a6';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Draw time
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(formatTime(timeLeft), centerX, centerY);
+
+    // Draw mode label
+    ctx.font = '14px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.fillText(mode === 'work' ? 'Focus' : 'Break', centerX, centerY + 45);
+
+    // Draw status
+    ctx.font = '12px sans-serif';
+    ctx.fillText(isActive ? '▶ Running' : '⏸ Paused', centerX, canvas.height - 15);
+  }, [timeLeft, mode, isActive, workTime, breakTime]);
+
+  // Update PiP when timer changes
+  useEffect(() => {
+    if (isPiPActive) {
+      updatePiPCanvas();
+    }
+  }, [timeLeft, mode, isActive, isPiPActive, updatePiPCanvas]);
+
+  // Clean up PiP on unmount
+  useEffect(() => {
+    return () => {
+      if (pipWindowRef.current) {
+        pipWindowRef.current.close();
+      }
+    };
+  }, []);
+
+  const togglePiP = async () => {
+    playClickSound();
+
+    if (isPiPActive && pipWindowRef.current) {
+      pipWindowRef.current.close();
+      pipWindowRef.current = null;
+      pipCanvasRef.current = null;
+      setIsPiPActive(false);
+      return;
+    }
+
+    // Create a small floating window
+    const pipWindow = window.open(
+      '',
+      'PomodoroTimer',
+      'width=200,height=220,left=100,top=100,toolbar=no,menubar=no,scrollbars=no,resizable=no,status=no'
+    );
+
+    if (!pipWindow) {
+      toast({
+        title: "Pop-up Blocked",
+        description: "Please allow pop-ups for this site to use Picture-in-Picture mode.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    pipWindowRef.current = pipWindow;
+
+    // Set up the PiP window content
+    pipWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Timer</title>
+          <style>
+            body { 
+              margin: 0; 
+              padding: 0; 
+              overflow: hidden;
+              background: ${mode === 'work' ? '#064e3b' : '#134e4a'};
+            }
+            canvas { display: block; }
+          </style>
+        </head>
+        <body>
+          <canvas id="timerCanvas" width="200" height="220"></canvas>
+        </body>
+      </html>
+    `);
+    pipWindow.document.close();
+
+    // Wait for the document to be ready
+    setTimeout(() => {
+      if (pipWindow && !pipWindow.closed) {
+        pipCanvasRef.current = pipWindow.document.getElementById('timerCanvas') as HTMLCanvasElement;
+        setIsPiPActive(true);
+        updatePiPCanvas();
+
+        // Handle window close
+        pipWindow.onbeforeunload = () => {
+          setIsPiPActive(false);
+          pipWindowRef.current = null;
+          pipCanvasRef.current = null;
+        };
+      }
+    }, 100);
   };
 
   const progress = mode === 'work' 
@@ -266,6 +405,21 @@ const Pomodoro = () => {
                 className="rounded-full w-12 h-12 border-gray-500 text-gray-300 hover:text-white hover:border-white"
               >
                 <Settings className="h-5 w-5" />
+              </SoundButton>
+
+              <SoundButton
+                onClick={togglePiP}
+                size="lg"
+                variant="outline"
+                className={cn(
+                  "rounded-full w-12 h-12 transition-all duration-300",
+                  isPiPActive 
+                    ? "border-green-400 text-green-400 bg-green-500/20" 
+                    : "border-gray-500 text-gray-300 hover:text-white hover:border-white"
+                )}
+                title="Picture-in-Picture Mode"
+              >
+                <PictureInPicture2 className="h-5 w-5" />
               </SoundButton>
             </div>
           </CardContent>
