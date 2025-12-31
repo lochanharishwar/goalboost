@@ -19,6 +19,8 @@ const Pomodoro = () => {
     setBreakTime,
     isPiPActive,
     setIsPiPActive,
+    isAlarmRinging,
+    stopAlarm,
     toggleTimer,
     resetTimer,
     switchMode,
@@ -69,7 +71,11 @@ const Pomodoro = () => {
 
   const handleToggleTimer = () => {
     playClickSound();
-    toggleTimer();
+    if (isAlarmRinging) {
+      stopAlarm();
+    } else {
+      toggleTimer();
+    }
   };
 
   const handleResetTimer = () => {
@@ -133,8 +139,21 @@ const Pomodoro = () => {
         </div>
 
         {/* Timer Display */}
-        <Card className="shadow-xl border-0 bg-black/30 backdrop-blur-xl border border-green-500/20 max-w-md mx-auto mb-6">
+        <Card className={cn(
+          "shadow-xl border-0 bg-black/30 backdrop-blur-xl max-w-md mx-auto mb-6 transition-all duration-300",
+          isAlarmRinging 
+            ? "border-2 border-red-500/50 animate-pulse" 
+            : "border border-green-500/20"
+        )}>
           <CardContent className="p-8 text-center">
+            {/* Alarm Banner */}
+            {isAlarmRinging && (
+              <div className="mb-4 bg-red-500/20 border border-red-500/30 rounded-lg p-3 animate-bounce">
+                <p className="text-red-300 font-medium">🔔 Time's up! Click to stop alarm</p>
+                <p className="text-red-400/70 text-sm">Press Space or R to dismiss</p>
+              </div>
+            )}
+            
             <div className="relative mb-6">
               {/* Circular Progress */}
               <svg className="w-48 h-48 transform -rotate-90 mx-auto" viewBox="0 0 100 100">
@@ -150,7 +169,7 @@ const Pomodoro = () => {
                   cx="50"
                   cy="50"
                   r="40"
-                  stroke={mode === 'work' ? "#10b981" : "#14b8a6"}
+                  stroke={isAlarmRinging ? "#ef4444" : mode === 'work' ? "#10b981" : "#14b8a6"}
                   strokeWidth="6"
                   fill="none"
                   strokeLinecap="round"
@@ -162,11 +181,14 @@ const Pomodoro = () => {
               {/* Time Display */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">
+                  <div className={cn(
+                    "text-4xl font-bold mb-1",
+                    isAlarmRinging ? "text-red-400" : "text-white"
+                  )}>
                     {formatTime(timeLeft)}
                   </div>
                   <div className="text-sm text-gray-300 capitalize">
-                    {mode === 'work' ? 'Focus Time' : 'Break Time'}
+                    {isAlarmRinging ? 'Alarm Ringing!' : mode === 'work' ? 'Focus Time' : 'Break Time'}
                   </div>
                 </div>
               </div>
@@ -175,20 +197,28 @@ const Pomodoro = () => {
             {/* Controls */}
             <div className="flex justify-center gap-3">
               <SoundButton
-                onClick={toggleTimer}
+                onClick={handleToggleTimer}
                 size="lg"
                 className={cn(
                   "rounded-full w-12 h-12 transition-all duration-300",
-                  mode === 'work' 
-                    ? "bg-green-500 hover:bg-green-600 text-white" 
-                    : "bg-teal-500 hover:bg-teal-600 text-white"
+                  isAlarmRinging
+                    ? "bg-red-500 hover:bg-red-600 text-white"
+                    : mode === 'work' 
+                      ? "bg-green-500 hover:bg-green-600 text-white" 
+                      : "bg-teal-500 hover:bg-teal-600 text-white"
                 )}
               >
-                {isActive ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                {isAlarmRinging ? (
+                  <span className="text-lg">🔕</span>
+                ) : isActive ? (
+                  <Pause className="h-5 w-5" />
+                ) : (
+                  <Play className="h-5 w-5" />
+                )}
               </SoundButton>
               
               <SoundButton
-                onClick={resetTimer}
+                onClick={handleResetTimer}
                 size="lg"
                 variant="outline"
                 className="rounded-full w-12 h-12 border-gray-500 text-gray-300 hover:text-white hover:border-white"
@@ -222,6 +252,13 @@ const Pomodoro = () => {
               >
                 <PictureInPicture2 className="h-5 w-5" />
               </SoundButton>
+            </div>
+            
+            {/* Keyboard Shortcuts Hint */}
+            <div className="mt-4 text-xs text-gray-500">
+              <span className="bg-gray-700/50 px-2 py-1 rounded">Space</span> Play/Pause
+              <span className="mx-2">•</span>
+              <span className="bg-gray-700/50 px-2 py-1 rounded">R</span> Reset
             </div>
           </CardContent>
         </Card>
