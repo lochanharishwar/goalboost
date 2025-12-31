@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { X, GripHorizontal, Play, Pause } from 'lucide-react';
+import { X, GripHorizontal, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTimer } from '@/contexts/TimerContext';
+
+const FLOATING_POSITION_KEY = 'floating-timer-position';
 
 export const FloatingTimer = () => {
   const { 
@@ -10,14 +12,36 @@ export const FloatingTimer = () => {
     isActive, 
     workTime, 
     breakTime, 
+    isAlarmRinging,
+    stopAlarm,
     setIsPiPActive,
     toggleTimer 
   } = useTimer();
   
-  const [position, setPosition] = useState({ x: window.innerWidth - 180, y: 100 });
+  // Load position from localStorage
+  const getInitialPosition = () => {
+    try {
+      const saved = localStorage.getItem(FLOATING_POSITION_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {}
+    return { x: window.innerWidth - 180, y: 100 };
+  };
+  
+  const [position, setPosition] = useState(getInitialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Save position to localStorage
+  useEffect(() => {
+    if (!isDragging) {
+      try {
+        localStorage.setItem(FLOATING_POSITION_KEY, JSON.stringify(position));
+      } catch (e) {}
+    }
+  }, [position, isDragging]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -107,9 +131,11 @@ export const FloatingTimer = () => {
       className={cn(
         "fixed z-[9999] rounded-2xl shadow-2xl border overflow-hidden select-none",
         "backdrop-blur-xl transition-shadow duration-200",
-        mode === 'work' 
-          ? "bg-emerald-900/95 border-emerald-500/30" 
-          : "bg-teal-900/95 border-teal-500/30",
+        isAlarmRinging 
+          ? "bg-red-900/95 border-red-500/50 animate-pulse" 
+          : mode === 'work' 
+            ? "bg-emerald-900/95 border-emerald-500/30" 
+            : "bg-teal-900/95 border-teal-500/30",
         isDragging && "shadow-emerald-500/20 shadow-2xl"
       )}
       style={{
@@ -126,7 +152,7 @@ export const FloatingTimer = () => {
       >
         <GripHorizontal className="h-3 w-3 text-white/50" />
         <span className="text-[10px] text-white/60 uppercase tracking-wider font-medium">
-          {mode === 'work' ? 'Focus' : 'Break'}
+          {isAlarmRinging ? 'ALARM' : mode === 'work' ? 'Focus' : 'Break'}
         </span>
         <button 
           onClick={onClose}
@@ -153,7 +179,7 @@ export const FloatingTimer = () => {
               cx="50"
               cy="50"
               r="42"
-              stroke={mode === 'work' ? "#10b981" : "#14b8a6"}
+              stroke={isAlarmRinging ? "#ef4444" : mode === 'work' ? "#10b981" : "#14b8a6"}
               strokeWidth="8"
               fill="none"
               strokeLinecap="round"
@@ -168,31 +194,42 @@ export const FloatingTimer = () => {
           </div>
         </div>
 
-        {/* Play/Pause Button */}
-        <button
-          onClick={toggleTimer}
-          className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1 transition-all",
-            mode === 'work' 
-              ? "bg-emerald-500 hover:bg-emerald-400" 
-              : "bg-teal-500 hover:bg-teal-400"
-          )}
-        >
-          {isActive ? (
-            <Pause className="h-4 w-4 text-white" />
-          ) : (
-            <Play className="h-4 w-4 text-white ml-0.5" />
-          )}
-        </button>
+        {/* Play/Pause or Stop Alarm Button */}
+        {isAlarmRinging ? (
+          <button
+            onClick={stopAlarm}
+            className="w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1 transition-all bg-red-500 hover:bg-red-400"
+          >
+            <VolumeX className="h-4 w-4 text-white" />
+          </button>
+        ) : (
+          <button
+            onClick={toggleTimer}
+            className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-1 transition-all",
+              mode === 'work' 
+                ? "bg-emerald-500 hover:bg-emerald-400" 
+                : "bg-teal-500 hover:bg-teal-400"
+            )}
+          >
+            {isActive ? (
+              <Pause className="h-4 w-4 text-white" />
+            ) : (
+              <Play className="h-4 w-4 text-white ml-0.5" />
+            )}
+          </button>
+        )}
 
         {/* Status */}
         <div className={cn(
           "text-[10px] font-medium px-2 py-0.5 rounded-full inline-block",
-          isActive 
-            ? "bg-green-500/20 text-green-400" 
-            : "bg-white/10 text-white/60"
+          isAlarmRinging 
+            ? "bg-red-500/30 text-red-300"
+            : isActive 
+              ? "bg-green-500/20 text-green-400" 
+              : "bg-white/10 text-white/60"
         )}>
-          {isActive ? '● Running' : '○ Paused'}
+          {isAlarmRinging ? '🔔 Stop Alarm' : isActive ? '● Running' : '○ Paused'}
         </div>
       </div>
     </div>
