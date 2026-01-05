@@ -276,36 +276,7 @@ export const TimerProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [isActive, timeLeft]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (isAlarmRinging) {
-          stopAlarm();
-        } else {
-          setIsActive(prev => !prev);
-        }
-      } else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        if (isAlarmRinging) {
-          stopAlarm();
-        }
-        setIsActive(false);
-        setTimeLeft(mode === 'work' ? workTime * 60 : breakTime * 60);
-        if (tickIntervalRef.current) {
-          clearInterval(tickIntervalRef.current);
-          tickIntervalRef.current = null;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mode, workTime, breakTime, isAlarmRinging, stopAlarm]);
+  // Keyboard shortcuts are now handled in Pomodoro.tsx only
 
   const toggleTimer = () => {
     if (isAlarmRinging) {
