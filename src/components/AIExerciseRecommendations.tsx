@@ -5,14 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, Loader2, Target, AlertCircle, Dumbbell, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sparkles, Loader2, Target, AlertCircle, Dumbbell, CheckCircle2, ArrowRight, Zap, Brain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { exercises } from '@/data/exercises';
 
 const fitnessLevels = ['beginner', 'intermediate', 'advanced'] as const;
-const goalOptions = ['Build', 'Lose', 'Flex', 'Endure'];
-const muscleGroups = ['Chest', 'Back', 'Arms', 'Legs'];
+const goalOptions = ['Build Muscle', 'Lose Weight', 'Flexibility', 'Endurance'];
+const muscleGroups = ['Chest', 'Back', 'Arms', 'Legs', 'Core', 'Shoulders'];
 
 interface ExercisePlan {
   summary: string;
@@ -82,174 +82,226 @@ export const AIExerciseRecommendations = () => {
   };
 
   return (
-    <Card className="shadow-lg border-0 bg-black/20 backdrop-blur-xl border border-purple-500/20">
-      <CardHeader className="pb-3 pt-4 px-4">
-        <CardTitle className="text-white text-base flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-purple-400" />
-          AI Recommendations
+    <Card className="shadow-2xl border-0 bg-gradient-to-br from-purple-900/40 via-black/30 to-blue-900/40 backdrop-blur-xl border border-purple-500/30 overflow-hidden animate-fade-in">
+      <CardHeader className="pb-4 pt-5 px-6 border-b border-purple-500/20">
+        <CardTitle className="text-white text-xl flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 border border-purple-400/30">
+            <Brain className="h-5 w-5 text-purple-300" />
+          </div>
+          AI Workout Recommendations
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 px-4 pb-4">
-        {/* Fitness Level */}
-        <div>
-          <Label className="text-gray-300 text-xs mb-1.5 block">Level</Label>
-          <div className="flex gap-1.5">
-            {fitnessLevels.map((level) => (
-              <Badge
-                key={level}
-                onClick={() => setFitnessLevel(level)}
-                className={cn(
-                  "cursor-pointer text-xs capitalize px-2 py-0.5",
-                  fitnessLevel === level 
-                    ? "bg-purple-500/40 text-purple-200 border-purple-400/50" 
-                    : "bg-black/30 text-gray-400 border-gray-600/30 hover:bg-purple-500/20"
-                )}
-              >
-                {level}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Goals & Muscles Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-gray-300 text-xs mb-1.5 block">Goals</Label>
-            <div className="flex flex-wrap gap-1">
-              {goalOptions.map((goal) => (
-                <Badge
-                  key={goal}
-                  onClick={() => toggleSelection(goal, selectedGoals, setSelectedGoals)}
-                  className={cn(
-                    "cursor-pointer text-xs px-1.5 py-0.5",
-                    selectedGoals.includes(goal)
-                      ? "bg-green-500/30 text-green-300 border-green-400/40"
-                      : "bg-black/20 text-gray-400 border-gray-600/20 hover:bg-green-500/20"
-                  )}
-                >
-                  {goal}
-                </Badge>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label className="text-gray-300 text-xs mb-1.5 block">Muscles</Label>
-            <div className="flex flex-wrap gap-1">
-              {muscleGroups.map((muscle) => (
-                <Badge
-                  key={muscle}
-                  onClick={() => toggleSelection(muscle, selectedMuscles, setSelectedMuscles)}
-                  className={cn(
-                    "cursor-pointer text-xs px-1.5 py-0.5",
-                    selectedMuscles.includes(muscle)
-                      ? "bg-orange-500/30 text-orange-300 border-orange-400/40"
-                      : "bg-black/20 text-gray-400 border-gray-600/20 hover:bg-orange-500/20"
-                  )}
-                >
-                  {muscle}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Generate Button */}
-        <Button
-          onClick={handleGetRecommendations}
-          disabled={isLoading}
-          size="sm"
-          className="w-full bg-purple-500/80 hover:bg-purple-500 text-white text-sm py-2"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Get Plan
-            </>
-          )}
-        </Button>
-
-        {/* Error Display */}
-        {error && (
-          <div className="p-2 rounded bg-red-500/20 border border-red-500/30 flex items-center gap-2">
-            <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
-            <p className="text-red-300 text-xs">{error}</p>
-          </div>
-        )}
-
-        {/* Plan Display */}
-        {plan && (
-          <div className="space-y-3 pt-2">
-            {/* Summary */}
-            <p className="text-gray-300 text-xs italic">{plan.summary}</p>
-
-            {/* Focus Areas Chart */}
-            <div className="space-y-1.5">
-              <Label className="text-gray-400 text-xs">Focus Distribution</Label>
-              {plan.focusAreas.map((area) => (
-                <div key={area.area} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400 w-16">{area.area}</span>
-                  <Progress value={area.percentage} className="h-2 flex-1" />
-                  <span className="text-xs text-gray-500 w-8">{area.percentage}%</span>
-                </div>
-              ))}
+      
+      <CardContent className="p-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[400px]">
+          {/* Left Side - Input */}
+          <div className="p-6 space-y-5 border-r border-purple-500/20 bg-black/20">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="h-4 w-4 text-yellow-400" />
+              <span className="text-sm font-medium text-gray-300">Configure Your Plan</span>
             </div>
 
-            {/* Exercises List */}
+            {/* Fitness Level */}
             <div className="space-y-2">
-              <Label className="text-gray-400 text-xs">Your Exercises</Label>
-              {plan.exercises.map((ex, idx) => {
-                const matched = getMatchedExercise(ex.matchId);
-                return (
-                  <div
-                    key={idx}
-                    className="p-2 rounded-lg bg-black/30 border border-purple-500/20 space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Dumbbell className="h-3.5 w-3.5 text-purple-400" />
-                        <span className="text-white text-sm font-medium">{ex.name}</span>
-                      </div>
-                      <Badge className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
-                        {ex.sets}×{ex.reps}
-                      </Badge>
-                    </div>
-                    <p className="text-gray-400 text-xs flex items-start gap-1">
-                      <CheckCircle2 className="h-3 w-3 text-green-400 mt-0.5 shrink-0" />
-                      {ex.benefit}
-                    </p>
-                    {matched && (
-                      <a
-                        href={`#${matched.id}`}
-                        className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1"
-                      >
-                        <ArrowRight className="h-3 w-3" />
-                        View in library below
-                      </a>
+              <Label className="text-gray-300 text-sm font-medium">Fitness Level</Label>
+              <div className="flex flex-wrap gap-2">
+                {fitnessLevels.map((level) => (
+                  <Badge
+                    key={level}
+                    onClick={() => setFitnessLevel(level)}
+                    className={cn(
+                      "cursor-pointer text-sm capitalize px-4 py-2 transition-all duration-300 hover:scale-105",
+                      fitnessLevel === level 
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30" 
+                        : "bg-black/40 text-gray-400 border-gray-600/40 hover:border-purple-400/50 hover:text-purple-300"
                     )}
-                  </div>
-                );
-              })}
+                  >
+                    {level}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
-            {/* Tips */}
-            <div className="space-y-1">
-              <Label className="text-gray-400 text-xs">Quick Tips</Label>
-              <ul className="space-y-1">
-                {plan.tips.map((tip, idx) => (
-                  <li key={idx} className="text-xs text-gray-300 flex items-start gap-1.5">
-                    <span className="text-purple-400">•</span>
-                    {tip}
-                  </li>
+            {/* Goals */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-sm font-medium">Fitness Goals</Label>
+              <div className="flex flex-wrap gap-2">
+                {goalOptions.map((goal) => (
+                  <Badge
+                    key={goal}
+                    onClick={() => toggleSelection(goal, selectedGoals, setSelectedGoals)}
+                    className={cn(
+                      "cursor-pointer text-sm px-3 py-1.5 transition-all duration-300 hover:scale-105",
+                      selectedGoals.includes(goal)
+                        ? "bg-gradient-to-r from-green-500/80 to-emerald-500/80 text-white border-transparent shadow-lg shadow-green-500/20"
+                        : "bg-black/40 text-gray-400 border-gray-600/40 hover:border-green-400/50 hover:text-green-300"
+                    )}
+                  >
+                    {goal}
+                  </Badge>
                 ))}
-              </ul>
+              </div>
             </div>
+
+            {/* Target Muscles */}
+            <div className="space-y-2">
+              <Label className="text-gray-300 text-sm font-medium">Target Muscles</Label>
+              <div className="flex flex-wrap gap-2">
+                {muscleGroups.map((muscle) => (
+                  <Badge
+                    key={muscle}
+                    onClick={() => toggleSelection(muscle, selectedMuscles, setSelectedMuscles)}
+                    className={cn(
+                      "cursor-pointer text-sm px-3 py-1.5 transition-all duration-300 hover:scale-105",
+                      selectedMuscles.includes(muscle)
+                        ? "bg-gradient-to-r from-orange-500/80 to-amber-500/80 text-white border-transparent shadow-lg shadow-orange-500/20"
+                        : "bg-black/40 text-gray-400 border-gray-600/40 hover:border-orange-400/50 hover:text-orange-300"
+                    )}
+                  >
+                    {muscle}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Generate Button */}
+            <Button
+              onClick={handleGetRecommendations}
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold py-6 text-base rounded-xl shadow-xl shadow-purple-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/40 mt-4"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                  Generating Your Plan...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Generate Workout Plan
+                </>
+              )}
+            </Button>
           </div>
-        )}
+
+          {/* Right Side - Output */}
+          <div className="p-6 bg-gradient-to-br from-black/30 to-purple-900/10 min-h-[400px] flex flex-col">
+            {/* Error Display */}
+            {error && (
+              <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center gap-3 animate-fade-in">
+                <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!plan && !error && !isLoading && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-in">
+                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4">
+                  <Sparkles className="h-12 w-12 text-purple-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Ready to Generate</h3>
+                <p className="text-gray-400 text-sm max-w-xs">
+                  Configure your preferences on the left and click generate to get your personalized workout plan.
+                </p>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-in">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl animate-pulse" />
+                  <Loader2 className="h-16 w-16 text-purple-400 animate-spin relative" />
+                </div>
+                <p className="text-gray-300 mt-4">Analyzing your preferences...</p>
+              </div>
+            )}
+
+            {/* Plan Display */}
+            {plan && !isLoading && (
+              <div className="space-y-5 overflow-y-auto animate-fade-in">
+                {/* Summary */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30">
+                  <p className="text-gray-200 text-sm italic">{plan.summary}</p>
+                </div>
+
+                {/* Focus Areas Chart */}
+                <div className="space-y-2">
+                  <Label className="text-gray-400 text-xs uppercase tracking-wider">Focus Distribution</Label>
+                  <div className="space-y-2">
+                    {plan.focusAreas.map((area) => (
+                      <div key={area.area} className="flex items-center gap-3">
+                        <span className="text-xs text-gray-400 w-20 shrink-0">{area.area}</span>
+                        <div className="flex-1 h-2 bg-black/40 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                            style={{ width: `${area.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-gray-500 w-10 text-right">{area.percentage}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Exercises List */}
+                <div className="space-y-2">
+                  <Label className="text-gray-400 text-xs uppercase tracking-wider">Your Exercises</Label>
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    {plan.exercises.map((ex, idx) => {
+                      const matched = getMatchedExercise(ex.matchId);
+                      return (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-black/40 border border-purple-500/20 space-y-2 hover:border-purple-500/40 transition-all duration-300"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1.5 rounded-lg bg-purple-500/20">
+                                <Dumbbell className="h-3.5 w-3.5 text-purple-400" />
+                              </div>
+                              <span className="text-white text-sm font-medium">{ex.name}</span>
+                            </div>
+                            <Badge className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
+                              {ex.sets}×{ex.reps}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-400 text-xs flex items-start gap-1.5">
+                            <CheckCircle2 className="h-3 w-3 text-green-400 mt-0.5 shrink-0" />
+                            {ex.benefit}
+                          </p>
+                          {matched && (
+                            <a
+                              href={`#${matched.id}`}
+                              className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+                            >
+                              <ArrowRight className="h-3 w-3" />
+                              View in library below
+                            </a>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Tips */}
+                <div className="space-y-2">
+                  <Label className="text-gray-400 text-xs uppercase tracking-wider">Pro Tips</Label>
+                  <ul className="space-y-1.5">
+                    {plan.tips.map((tip, idx) => (
+                      <li key={idx} className="text-xs text-gray-300 flex items-start gap-2 p-2 rounded-lg bg-black/20">
+                        <span className="text-purple-400 text-lg leading-none">•</span>
+                        {tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

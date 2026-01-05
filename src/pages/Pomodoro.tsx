@@ -54,6 +54,30 @@ const Pomodoro = () => {
     }
   }, []);
 
+  // Keyboard shortcuts - only on this page
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isAlarmRinging) {
+          stopAlarm();
+        } else {
+          toggleTimer();
+        }
+      } else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        resetTimer();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAlarmRinging, stopAlarm, toggleTimer, resetTimer]);
+
   const toggleTheme = () => {
     playClickSound();
     setIsDarkMode(!isDarkMode);

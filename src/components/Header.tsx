@@ -39,20 +39,20 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-black/20 backdrop-blur-xl border-b border-blue-500/20 shadow-2xl">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-lg">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
           <div className="flex items-center gap-3 transform hover:scale-105 transition-all duration-300">
             <div className="relative">
-              <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400 animate-pulse" />
-              <div className="absolute inset-0 bg-blue-400 blur-lg opacity-30 animate-pulse"></div>
+              <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
+              <div className="absolute inset-0 bg-primary blur-lg opacity-30 animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-400 via-blue-500 to-white bg-clip-text text-transparent tracking-wide font-inter">
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary to-foreground bg-clip-text text-transparent tracking-wide font-inter">
                 GoalFlow
               </h1>
-              <p className="text-xs text-blue-200/80 font-medium tracking-wider font-inter hidden sm:block">
+              <p className="text-xs text-muted-foreground font-medium tracking-wider font-inter hidden sm:block">
                 Your Daily Productivity Companion
               </p>
             </div>
@@ -65,8 +65,8 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
                 key={item.path}
                 variant="ghost" 
                 className={cn(
-                  "text-white hover:text-blue-400 transition-colors font-inter",
-                  isActive(item.path) && "text-blue-400 bg-blue-500/20"
+                  "text-muted-foreground hover:text-primary transition-colors font-inter",
+                  isActive(item.path) && "text-primary bg-primary/10"
                 )}
                 onClick={() => navigate(item.path)}
               >
@@ -83,13 +83,13 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
                 <PopoverTrigger asChild>
                   <SoundButton 
                     variant="outline" 
-                    className="gap-2 bg-gradient-to-r from-blue-500/20 to-white/20 border-blue-400/30 text-white hover:from-blue-500/30 hover:to-white/30 backdrop-blur-sm shadow-xl font-inter text-xs sm:text-sm hidden sm:flex"
+                    className="gap-2 bg-primary/10 border-border text-foreground hover:bg-primary/20 backdrop-blur-sm shadow-lg font-inter text-xs sm:text-sm hidden sm:flex"
                   >
                     <Calendar className="h-4 w-4" />
                     {format(selectedDate, 'MMM dd')}
                   </SoundButton>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-black/90 border-blue-500/30 backdrop-blur-xl shadow-2xl" align="center">
+                <PopoverContent className="w-auto p-0 bg-background/95 border-border backdrop-blur-xl shadow-2xl" align="center">
                   <CalendarComponent
                     mode="single"
                     selected={selectedDate}
@@ -100,7 +100,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
                       }
                     }}
                     initialFocus
-                    className="pointer-events-auto bg-black/50 text-white"
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -111,7 +111,7 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
               variant="outline"
               size="icon"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden bg-black/20 border-blue-400/30 text-white hover:bg-blue-500/20 transition-all duration-300"
+              className="md:hidden bg-background/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
             >
               {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </SoundButton>
@@ -122,14 +122,14 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
                 variant="outline"
                 size="icon"
                 onClick={onToggleTheme}
-                className="bg-black/20 border-blue-400/30 text-white hover:bg-blue-500/20 transition-all duration-300"
+                className="bg-background/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
               >
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </SoundButton>
               <SoundButton
                 variant="outline"
                 size="icon"
-                className="bg-black/20 border-blue-400/30 text-white hover:bg-blue-500/20 transition-all duration-300"
+                className="bg-background/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
               >
                 <User className="h-4 w-4" />
               </SoundButton>
@@ -139,15 +139,15 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-blue-500/20">
+          <div className="md:hidden mt-4 pb-4 border-t border-border/50">
             <nav className="flex flex-col gap-2 mt-4">
               {navigationItems.map((item) => (
                 <SoundButton
                   key={item.path}
                   variant="ghost"
                   className={cn(
-                    "justify-start text-white hover:text-blue-400 hover:bg-blue-500/20 transition-colors font-inter",
-                    isActive(item.path) && "text-blue-400 bg-blue-500/20"
+                    "justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors font-inter",
+                    isActive(item.path) && "text-primary bg-primary/10"
                   )}
                   onClick={() => handleNavigation(item.path)}
                 >
@@ -156,19 +156,19 @@ export const Header = ({ isDarkMode, onToggleTheme, selectedDate, onDateSelect }
               ))}
               
               {/* Mobile Actions */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-blue-500/20">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/50">
                 <SoundButton
                   variant="outline"
                   size="icon"
                   onClick={onToggleTheme}
-                  className="bg-black/20 border-blue-400/30 text-white hover:bg-blue-500/20 transition-all duration-300"
+                  className="bg-background/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
                 >
                   {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 </SoundButton>
                 <SoundButton
                   variant="outline"
                   size="icon"
-                  className="bg-black/20 border-blue-400/30 text-white hover:bg-blue-500/20 transition-all duration-300"
+                  className="bg-background/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
                 >
                   <User className="h-4 w-4" />
                 </SoundButton>
