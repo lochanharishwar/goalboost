@@ -37,34 +37,36 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border shadow-lg">
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b-2 border-border shadow-xl">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Brand Logo */}
           <div className="flex items-center gap-3 transform hover:scale-105 transition-all duration-300">
             <div className="relative">
-              <Zap className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse" />
-              <div className="absolute inset-0 bg-primary blur-lg opacity-30 animate-pulse"></div>
+              <div className="p-2 rounded-xl bg-primary/15 shadow-lg">
+                <Zap className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
+              </div>
+              <div className="absolute inset-0 bg-primary blur-xl opacity-25 animate-pulse"></div>
             </div>
             <div>
-              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent tracking-wide font-inter">
+              <h1 className="text-lg sm:text-2xl font-extrabold text-gradient tracking-tight font-inter">
                 GoalFlow
               </h1>
-              <p className="text-xs text-muted-foreground font-medium tracking-wider font-inter hidden sm:block">
+              <p className="text-xs text-muted-foreground font-semibold tracking-wider font-inter hidden sm:block">
                 Your Daily Productivity Companion
               </p>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-1">
             {navigationItems.map((item) => (
               <SoundButton 
                 key={item.path}
                 variant="ghost" 
                 className={cn(
-                  "text-muted-foreground hover:text-primary transition-colors font-inter",
-                  isActive(item.path) && "text-primary bg-primary/10"
+                  "text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all font-semibold font-inter px-4",
+                  isActive(item.path) && "text-primary bg-primary/15 shadow-sm"
                 )}
                 onClick={() => navigate(item.path)}
               >
@@ -81,13 +83,13 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
                 <PopoverTrigger asChild>
                   <SoundButton 
                     variant="outline" 
-                    className="gap-2 bg-primary/10 border-border text-foreground hover:bg-primary/20 backdrop-blur-sm shadow-lg font-inter text-xs sm:text-sm hidden sm:flex"
+                    className="gap-2 bg-primary/15 border-primary/30 text-foreground hover:bg-primary/25 backdrop-blur-sm shadow-lg font-semibold font-inter text-xs sm:text-sm hidden sm:flex"
                   >
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-4 w-4 text-primary" />
                     {format(selectedDate, 'MMM dd')}
                   </SoundButton>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background/95 border-border backdrop-blur-xl shadow-2xl" align="center">
+                <PopoverContent className="w-auto p-0 bg-card/98 border-2 border-border backdrop-blur-xl shadow-2xl" align="center">
                   <CalendarComponent
                     mode="single"
                     selected={selectedDate}
@@ -109,25 +111,25 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
               variant="outline"
               size="icon"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden bg-secondary/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
+              className="md:hidden bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
             >
               {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </SoundButton>
 
             {/* Desktop Actions */}
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2">
               <SoundButton
                 variant="outline"
                 size="icon"
                 onClick={toggleTheme}
-                className="bg-secondary/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
+                className="bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
               >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-primary" />}
               </SoundButton>
               <SoundButton
                 variant="outline"
                 size="icon"
-                className="bg-secondary/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
+                className="bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
               >
                 <User className="h-4 w-4" />
               </SoundButton>
@@ -137,15 +139,15 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-border/50">
-            <nav className="flex flex-col gap-2 mt-4">
+          <div className="md:hidden mt-4 pb-4 border-t-2 border-border/60 animate-fade-in">
+            <nav className="flex flex-col gap-1 mt-4">
               {navigationItems.map((item) => (
                 <SoundButton
                   key={item.path}
                   variant="ghost"
                   className={cn(
-                    "justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors font-inter",
-                    isActive(item.path) && "text-primary bg-primary/10"
+                    "justify-start text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all font-semibold font-inter",
+                    isActive(item.path) && "text-primary bg-primary/15 shadow-sm"
                   )}
                   onClick={() => handleNavigation(item.path)}
                 >
@@ -154,19 +156,19 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
               ))}
               
               {/* Mobile Actions */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/50">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t-2 border-border/60">
                 <SoundButton
                   variant="outline"
                   size="icon"
                   onClick={toggleTheme}
-                  className="bg-secondary/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
+                  className="bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
                 >
-                  {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-primary" />}
                 </SoundButton>
                 <SoundButton
                   variant="outline"
                   size="icon"
-                  className="bg-secondary/50 border-border text-foreground hover:bg-primary/10 transition-all duration-300"
+                  className="bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
                 >
                   <User className="h-4 w-4" />
                 </SoundButton>

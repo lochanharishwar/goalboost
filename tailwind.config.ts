@@ -72,6 +72,18 @@ export default {
 					work: 'hsl(var(--timer-work))',
 					break: 'hsl(var(--timer-break))',
 					alarm: 'hsl(var(--timer-alarm))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					foreground: 'hsl(var(--info-foreground))'
 				}
 			},
 			borderRadius: {
