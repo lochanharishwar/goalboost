@@ -464,40 +464,24 @@ const Reminders = () => {
               )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Reminder Text */}
-            <Input
-              value={newReminderText}
-              onChange={(e) => setNewReminderText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="What should I remind you about?"
-              className="h-14 text-lg font-medium rounded-xl bg-background border-2 border-input focus:border-primary"
-            />
-
-            {/* Time Picker - Clock Style */}
-            <div className="flex flex-col items-center gap-4">
-              <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Select Time
-              </label>
-              <div className="relative">
-                <div className="p-8 rounded-3xl bg-card border-4 border-primary/30 shadow-lg">
-                  <div className="flex items-center justify-center gap-2">
-                    <Input
-                      type="time"
-                      value={newReminderTime}
-                      onChange={(e) => setNewReminderTime(e.target.value)}
-                      className="h-16 w-48 text-3xl font-bold text-center rounded-xl bg-background border-2 border-primary/30 focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    />
-                  </div>
-                  {newReminderTime && (
-                    <div className="text-center mt-4">
-                      <span className="text-lg font-semibold text-primary">
-                        {formatTime(newReminderTime).displayHour}:{formatTime(newReminderTime).minutes} {formatTime(newReminderTime).ampm}
-                      </span>
-                    </div>
-                  )}
-                </div>
+          <CardContent className="space-y-4">
+            {/* Reminder Text + Time - Inline */}
+            <div className="flex gap-3 items-center">
+              <Input
+                value={newReminderText}
+                onChange={(e) => setNewReminderText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="What should I remind you about?"
+                className="flex-1 h-12 text-base font-medium rounded-xl bg-background border-2 border-input focus:border-primary"
+              />
+              <div className="flex items-center gap-2 shrink-0">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="time"
+                  value={newReminderTime}
+                  onChange={(e) => setNewReminderTime(e.target.value)}
+                  className="h-12 w-32 text-base font-bold text-center rounded-xl bg-background border-2 border-primary/30 focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
               </div>
             </div>
 

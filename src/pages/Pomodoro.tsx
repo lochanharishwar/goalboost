@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, Pause, RotateCcw, Settings, PictureInPicture2, Volume2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, PictureInPicture2, Volume2, Maximize, X, BellOff } from 'lucide-react';
 import { SoundButton } from '@/components/SoundButton';
 import { cn } from '@/lib/utils';
 import { useClickSound } from '@/utils/soundUtils';
@@ -38,6 +38,8 @@ const Pomodoro = () => {
   } = useTimer();
   
   const [showSettings, setShowSettings] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [doNotDisturb, setDoNotDisturb] = useState(false);
   const { playClickSound } = useClickSound();
   const { isDarkMode, toggleTheme } = useTheme();
 
@@ -46,6 +48,47 @@ const Pomodoro = () => {
       setTimeLeft(workTime * 60);
     }
   }, []);
+
+  // Handle fullscreen changes
+  const enterFullscreen = useCallback(async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+      setIsFullscreen(true);
+      setDoNotDisturb(true);
+    } catch (error) {
+      console.log('Fullscreen not supported:', error);
+      // Still enable fullscreen mode UI even if native fullscreen fails
+      setIsFullscreen(true);
+      setDoNotDisturb(true);
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.log('Exit fullscreen error:', error);
+    }
+    setIsFullscreen(false);
+    setDoNotDisturb(false);
+  }, []);
+
+  // Listen for fullscreen changes (e.g., user pressing Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+        setDoNotDisturb(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [isFullscreen]);
 
   // Keyboard shortcuts - only on this page
   useEffect(() => {
@@ -64,12 +107,21 @@ const Pomodoro = () => {
       } else if (e.code === 'KeyR' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         resetTimer();
+      } else if (e.code === 'KeyF' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        if (isFullscreen) {
+          exitFullscreen();
+        } else {
+          enterFullscreen();
+        }
+      } else if (e.code === 'Escape' && isFullscreen) {
+        exitFullscreen();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAlarmRinging, stopAlarm, toggleTimer, resetTimer]);
+  }, [isAlarmRinging, stopAlarm, toggleTimer, resetTimer, isFullscreen, enterFullscreen, exitFullscreen]);
 
   const handleToggleTheme = () => {
     playClickSound();
@@ -117,9 +169,149 @@ const Pomodoro = () => {
     resetTimer();
   };
 
+  const handleFullscreenToggle = () => {
+    playClickSound();
+    if (isFullscreen) {
+      exitFullscreen();
+    } else {
+      enterFullscreen();
+    }
+  };
+
   const progress = mode === 'work' 
     ? ((workTime * 60 - timeLeft) / (workTime * 60)) * 100
     : ((breakTime * 60 - timeLeft) / (breakTime * 60)) * 100;
+
+  // Fullscreen Focus Mode UI
+  if (isFullscreen) {
+    return (
+      <div className={cn(
+        "fixed inset-0 z-50 flex flex-col items-center justify-center transition-colors duration-500",
+        mode === 'work' 
+          ? "bg-gradient-to-br from-background via-primary/5 to-background" 
+          : "bg-gradient-to-br from-background via-accent/5 to-background"
+      )}>
+        {/* Do Not Disturb Indicator */}
+        {doNotDisturb && (
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 backdrop-blur-sm border border-border/50">
+            <BellOff className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Do Not Disturb</span>
+          </div>
+        )}
+
+        {/* Exit Button */}
+        <button
+          onClick={exitFullscreen}
+          className="absolute top-6 right-6 p-3 rounded-full bg-muted/50 backdrop-blur-sm border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        {/* Mode Indicator */}
+        <div className="mb-8">
+          <span className={cn(
+            "text-lg font-semibold uppercase tracking-widest",
+            mode === 'work' ? "text-primary" : "text-accent"
+          )}>
+            {mode === 'work' ? 'Focus Time' : 'Break Time'}
+          </span>
+        </div>
+
+        {/* Large Timer Display */}
+        <div className="relative mb-12">
+          <svg className="w-80 h-80 transform -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              stroke="currentColor"
+              className="text-muted/20"
+              strokeWidth="3"
+              fill="none"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              stroke={isAlarmRinging ? 'hsl(var(--destructive))' : mode === 'work' ? 'hsl(var(--primary))' : 'hsl(var(--accent))'}
+              strokeWidth="3"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={`${progress * 2.64} 264`}
+              className="transition-all duration-1000"
+            />
+          </svg>
+          
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className={cn(
+                "text-8xl font-bold tracking-tight transition-colors",
+                isAlarmRinging ? "text-destructive animate-pulse" : "text-foreground"
+              )}>
+                {formatTime(timeLeft)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Alarm Banner */}
+        {isAlarmRinging && (
+          <div className="mb-8 bg-destructive/20 border border-destructive/30 rounded-2xl px-8 py-4 animate-bounce">
+            <p className="text-destructive text-xl font-semibold">🔔 Time's up!</p>
+          </div>
+        )}
+
+        {/* Controls */}
+        <div className="flex justify-center gap-4">
+          <SoundButton
+            onClick={handleToggleTimer}
+            size="lg"
+            className={cn(
+              "rounded-full w-20 h-20 transition-all duration-300 hover:scale-110",
+              isAlarmRinging
+                ? "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                : mode === 'work' 
+                  ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                  : "bg-accent hover:bg-accent/90 text-accent-foreground"
+            )}
+          >
+            {isAlarmRinging ? (
+              <span className="text-2xl">🔕</span>
+            ) : isActive ? (
+              <Pause className="h-8 w-8" />
+            ) : (
+              <Play className="h-8 w-8 ml-1" />
+            )}
+          </SoundButton>
+          
+          <SoundButton
+            onClick={handleResetTimer}
+            size="lg"
+            variant="outline"
+            className="rounded-full w-20 h-20 border-border text-muted-foreground hover:text-foreground hover:border-foreground/50 hover:scale-110 transition-all"
+          >
+            <RotateCcw className="h-6 w-6" />
+          </SoundButton>
+        </div>
+
+        {/* Keyboard Hints */}
+        <div className="absolute bottom-8 flex items-center gap-6 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">Space</kbd>
+            Play/Pause
+          </span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">R</kbd>
+            Reset
+          </span>
+          <span className="flex items-center gap-1.5">
+            <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">Esc</kbd>
+            Exit Fullscreen
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden transition-colors duration-500">
@@ -293,10 +485,20 @@ const Pomodoro = () => {
               >
                 <PictureInPicture2 className="h-5 w-5" />
               </SoundButton>
+
+              <SoundButton
+                onClick={handleFullscreenToggle}
+                size="lg"
+                variant="outline"
+                className="rounded-full w-14 h-14 border-border text-muted-foreground hover:text-foreground hover:border-foreground/50 hover:scale-110 transition-all"
+                title="Fullscreen Focus Mode (F)"
+              >
+                <Maximize className="h-5 w-5" />
+              </SoundButton>
             </div>
             
             {/* Keyboard Shortcuts Hint */}
-            <div className="mt-6 text-xs text-muted-foreground flex items-center justify-center gap-4">
+            <div className="mt-6 text-xs text-muted-foreground flex items-center justify-center gap-4 flex-wrap">
               <span className="flex items-center gap-1.5">
                 <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">Space</kbd>
                 Play/Pause
@@ -304,6 +506,10 @@ const Pomodoro = () => {
               <span className="flex items-center gap-1.5">
                 <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">R</kbd>
                 Reset
+              </span>
+              <span className="flex items-center gap-1.5">
+                <kbd className="bg-muted px-2 py-1 rounded text-[10px] font-mono">F</kbd>
+                Fullscreen
               </span>
             </div>
           </CardContent>
