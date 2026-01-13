@@ -343,32 +343,45 @@ const Dashboard = () => {
           <div className="lg:col-span-1">
             <Card className="glass-bold border-2 border-accent/30 overflow-hidden h-full">
               <div className="h-1.5 w-full bg-gradient-to-r from-accent to-primary" />
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-accent/20">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-accent/30 to-primary/20 animate-pulse">
                     <Award className="h-5 w-5 text-accent" />
                   </div>
-                  Achievements
+                  <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+                    Achievements
+                  </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2">
                 {userStats.achievements.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {userStats.achievements.slice(-4).map((achievement) => (
-                      <AchievementBadge
+                  <div className="grid grid-cols-2 gap-2">
+                    {userStats.achievements.slice(-4).map((achievement, index) => (
+                      <div 
                         key={achievement.id}
-                        achievement={achievement}
-                        size="sm"
-                      />
+                        className="animate-fade-in"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <AchievementBadge
+                          achievement={achievement}
+                          size="sm"
+                        />
+                      </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-4">
-                      <Award className="h-8 w-8 text-accent" />
+                  <div className="text-center py-6">
+                    <div className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-accent/30 to-primary/20 blur-xl animate-pulse" />
+                      <div className="relative w-full h-full rounded-2xl bg-gradient-to-br from-accent/20 to-primary/10 border-2 border-accent/30 flex items-center justify-center">
+                        <Award className="h-10 w-10 text-accent animate-bounce" style={{ animationDuration: '2s' }} />
+                      </div>
                     </div>
                     <p className="text-muted-foreground text-sm font-medium">
                       Complete goals to unlock achievements!
+                    </p>
+                    <p className="text-muted-foreground/60 text-xs mt-1">
+                      🏆 Your trophies will appear here
                     </p>
                   </div>
                 )}
