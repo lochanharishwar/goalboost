@@ -10,7 +10,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['None'],
     targetMuscles: ['Chest', 'Triceps', 'Shoulders', 'Core'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=500&h=400&fit=crop',
     steps: [
       'Start in a plank position with hands slightly wider than shoulder-width apart',
       'Keep your body in a straight line from head to heels, engaging your core',
@@ -29,7 +29,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['None'],
     targetMuscles: ['Triceps', 'Chest', 'Shoulders'],
-    image: 'https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1616803689943-5601631c7fec?w=500&h=400&fit=crop',
     steps: [
       'Start in push-up position with hands close together forming a diamond shape',
       'Keep your elbows close to your body as you lower down',
@@ -48,7 +48,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['None'],
     targetMuscles: ['Chest', 'Shoulders', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
     steps: [
       'Start in push-up position with hands wider than shoulder-width',
       'Lower your chest to the ground keeping elbows out',
@@ -66,7 +66,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['Bench', 'Box'],
     targetMuscles: ['Upper Chest', 'Shoulders', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=500&h=400&fit=crop',
     steps: [
       'Place feet on elevated surface, hands on ground',
       'Keep body in straight line from head to heels',
@@ -102,7 +102,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-10 reps',
     equipment: ['None'],
     targetMuscles: ['Shoulders', 'Triceps', 'Upper Chest'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=500&h=400&fit=crop',
     steps: [
       'Start in downward dog position with hips high',
       'Bend elbows and lower head toward the ground',
@@ -120,7 +120,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '4 sets of 6-10 reps',
     equipment: ['Barbell', 'Bench', 'Weight plates'],
     targetMuscles: ['Chest', 'Triceps', 'Front deltoids'],
-    image: 'https://images.unsplash.com/photo-1434608519344-49d77a699e3d?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?w=500&h=400&fit=crop',
     steps: [
       'Lie flat on the bench with your eyes under the barbell',
       'Grip the bar with hands slightly wider than shoulder-width apart',
@@ -139,7 +139,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '4 sets of 8-10 reps',
     equipment: ['Barbell', 'Incline Bench', 'Weight plates'],
     targetMuscles: ['Upper Chest', 'Shoulders', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571388208497-71bedc66e932?w=500&h=400&fit=crop',
     steps: [
       'Set bench to 30-45 degree incline',
       'Lie back and grip bar slightly wider than shoulders',
@@ -157,7 +157,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells', 'Bench'],
     targetMuscles: ['Chest', 'Triceps', 'Shoulders'],
-    image: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=500&h=400&fit=crop',
     steps: [
       'Lie on bench holding dumbbells at chest level',
       'Press dumbbells up until arms are extended',
@@ -175,7 +175,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells', 'Bench'],
     targetMuscles: ['Chest', 'Front deltoids'],
-    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
     steps: [
       'Lie on bench holding dumbbells above chest with arms extended',
       'Keep a slight bend in your elbows throughout',
@@ -193,7 +193,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Cable machine'],
     targetMuscles: ['Chest', 'Front deltoids'],
-    image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=500&h=400&fit=crop',
     steps: [
       'Set cables at shoulder height or above',
       'Grab handles and step forward for tension',
@@ -211,7 +211,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['Parallel bars', 'Dip station'],
     targetMuscles: ['Lower Chest', 'Triceps', 'Shoulders'],
-    image: 'https://images.unsplash.com/photo-1567598508481-65985588e295?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=500&h=400&fit=crop',
     steps: [
       'Grip parallel bars and lift yourself up',
       'Lean forward slightly to target chest',
@@ -231,7 +231,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 5-10 reps',
     equipment: ['Pull-up bar'],
     targetMuscles: ['Latissimus dorsi', 'Biceps', 'Rhomboids', 'Middle trapezius'],
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=500&h=400&fit=crop',
     steps: [
       'Hang from bar with overhand grip, hands shoulder-width',
       'Pull yourself up until chin clears the bar',
@@ -249,7 +249,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 6-10 reps',
     equipment: ['Pull-up bar'],
     targetMuscles: ['Biceps', 'Latissimus dorsi', 'Forearms'],
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=500&h=400&fit=crop',
     steps: [
       'Hang from bar with underhand grip, hands shoulder-width',
       'Pull up until chin clears the bar',
@@ -267,7 +267,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 6-10 reps',
     equipment: ['Pull-up bar with neutral grips'],
     targetMuscles: ['Lats', 'Biceps', 'Brachialis', 'Forearms'],
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
     steps: [
       'Grip parallel handles with palms facing each other',
       'Pull up until chin clears the bar',
@@ -285,7 +285,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-12 reps per arm',
     equipment: ['Dumbbells', 'Bench'],
     targetMuscles: ['Latissimus dorsi', 'Rhomboids', 'Rear deltoids', 'Biceps'],
-    image: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=500&h=400&fit=crop',
     steps: [
       'Place one knee and hand on bench',
       'Hold dumbbell in opposite hand',
@@ -303,7 +303,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '4 sets of 8-10 reps',
     equipment: ['Barbell', 'Weight plates'],
     targetMuscles: ['Lats', 'Rhomboids', 'Traps', 'Biceps', 'Lower Back'],
-    image: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&h=400&fit=crop',
     steps: [
       'Hinge forward at hips holding barbell',
       'Keep back flat, knees slightly bent',
@@ -321,7 +321,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '4 sets of 8-10 reps',
     equipment: ['T-bar machine', 'Weight plates'],
     targetMuscles: ['Middle Back', 'Lats', 'Biceps', 'Rear Delts'],
-    image: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=500&h=400&fit=crop',
     steps: [
       'Straddle the bar and grip the handles',
       'Bend at hips with flat back',
@@ -339,7 +339,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Cable machine', 'Lat pulldown bar'],
     targetMuscles: ['Latissimus dorsi', 'Rhomboids', 'Biceps'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1530822847156-5df684ec5ee1?w=500&h=400&fit=crop',
     steps: [
       'Sit at machine with thighs secured',
       'Grip bar with wide overhand grip',
@@ -357,7 +357,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Cable machine', 'V-bar attachment'],
     targetMuscles: ['Lats', 'Biceps', 'Middle Back'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=500&h=400&fit=crop',
     steps: [
       'Attach V-bar to cable machine',
       'Sit and grip the handles',
@@ -375,7 +375,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Cable machine', 'V-bar or straight bar'],
     targetMuscles: ['Middle Back', 'Lats', 'Biceps', 'Rear Delts'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=500&h=400&fit=crop',
     steps: [
       'Sit with feet on platform, knees slightly bent',
       'Grab handle with arms extended',
@@ -393,7 +393,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Cable machine', 'Rope attachment'],
     targetMuscles: ['Rear deltoids', 'Rhomboids', 'Middle trapezius'],
-    image: 'https://images.unsplash.com/photo-1566241477457-fa9280d17ba3?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=500&h=400&fit=crop',
     steps: [
       'Set cable at face height with rope',
       'Pull rope toward face, separating hands',
@@ -411,7 +411,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['Barbell on rack', 'Smith machine', 'TRX straps'],
     targetMuscles: ['Upper Back', 'Biceps', 'Rear Delts', 'Core'],
-    image: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1596357395217-80de13130e92?w=500&h=400&fit=crop',
     steps: [
       'Set bar at waist height',
       'Hang underneath with arms extended',
@@ -429,7 +429,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Cable machine', 'Straight bar'],
     targetMuscles: ['Lats', 'Teres Major', 'Triceps Long Head'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=500&h=400&fit=crop',
     steps: [
       'Stand facing high pulley',
       'Grip bar with arms extended',
@@ -449,7 +449,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '4 sets of 6-8 reps',
     equipment: ['Barbell', 'Weight plates'],
     targetMuscles: ['Shoulders', 'Triceps', 'Upper chest', 'Core'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1532029837206-abbe2b7620e3?w=500&h=400&fit=crop',
     steps: [
       'Stand with bar at shoulder level',
       'Press bar straight overhead',
@@ -467,7 +467,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Shoulders', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Hold dumbbells at shoulder height',
       'Press dumbbells overhead',
@@ -485,7 +485,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['All three deltoid heads', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1594737625785-a6cbdabd333c?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
     steps: [
       'Start with dumbbells at shoulders, palms facing you',
       'Rotate wrists as you press up',
@@ -503,7 +503,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Deltoids', 'Trapezius'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
     steps: [
       'Stand with dumbbells at sides',
       'Raise arms out to sides until shoulder height',
@@ -521,7 +521,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Front Deltoids', 'Upper Chest'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=500&h=400&fit=crop',
     steps: [
       'Stand holding dumbbells in front of thighs',
       'Raise one or both arms to shoulder height',
@@ -539,7 +539,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Rear Deltoids', 'Rhomboids', 'Traps'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=500&h=400&fit=crop',
     steps: [
       'Bend forward at hips, back flat',
       'Hold dumbbells below chest',
@@ -557,7 +557,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Barbell', 'Dumbbells', 'Cable'],
     targetMuscles: ['Shoulders', 'Upper Traps', 'Biceps'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500&h=400&fit=crop',
     steps: [
       'Hold weight with narrow grip in front of thighs',
       'Pull weight up to chest level',
@@ -575,7 +575,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Dumbbells', 'Barbell'],
     targetMuscles: ['Upper Trapezius', 'Levator Scapulae'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
     steps: [
       'Stand holding weights at sides',
       'Shrug shoulders up toward ears',
@@ -595,7 +595,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-12 reps',
     equipment: ['Parallel bars', 'Dip station'],
     targetMuscles: ['Triceps', 'Lower chest', 'Front deltoids'],
-    image: 'https://images.unsplash.com/photo-1567598508481-65985588e295?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1598632640487-6ea4a4e8b963?w=500&h=400&fit=crop',
     steps: [
       'Grip bars and support body weight',
       'Keep body upright for tricep focus',
@@ -613,7 +613,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbell'],
     targetMuscles: ['Triceps'],
-    image: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Hold dumbbell with both hands above head',
       'Lower weight behind head',
@@ -631,7 +631,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Cable machine', 'Straight bar or rope'],
     targetMuscles: ['Triceps'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=500&h=400&fit=crop',
     steps: [
       'Stand facing cable machine',
       'Grip bar with overhand grip',
@@ -649,7 +649,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['EZ bar', 'Dumbbells', 'Bench'],
     targetMuscles: ['Triceps'],
-    image: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=500&h=400&fit=crop',
     steps: [
       'Lie on bench holding weight above chest',
       'Lower weight toward forehead',
@@ -667,7 +667,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-10 reps',
     equipment: ['Barbell', 'Bench'],
     targetMuscles: ['Triceps', 'Chest', 'Front Delts'],
-    image: 'https://images.unsplash.com/photo-1434608519344-49d77a699e3d?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?w=500&h=400&fit=crop',
     steps: [
       'Lie on bench with narrow grip on bar',
       'Lower bar to lower chest',
@@ -685,7 +685,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps per arm',
     equipment: ['Dumbbells'],
     targetMuscles: ['Triceps'],
-    image: 'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1603287681836-b174ce5074c2?w=500&h=400&fit=crop',
     steps: [
       'Bend forward with one hand on bench',
       'Hold dumbbell with upper arm parallel to floor',
@@ -705,7 +705,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-15 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Biceps', 'Forearms'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Stand with dumbbells at sides',
       'Curl weights up by flexing biceps',
@@ -723,7 +723,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Biceps', 'Brachialis', 'Forearms'],
-    image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
     steps: [
       'Hold dumbbells with neutral grip (palms facing in)',
       'Curl weights up maintaining neutral grip',
@@ -741,7 +741,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Barbell', 'EZ bar'],
     targetMuscles: ['Biceps'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
     steps: [
       'Stand holding barbell with underhand grip',
       'Curl bar up to shoulder level',
@@ -759,7 +759,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Preacher bench', 'EZ bar', 'Dumbbells'],
     targetMuscles: ['Biceps', 'Brachialis'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=500&h=400&fit=crop',
     steps: [
       'Sit at preacher bench with arms on pad',
       'Curl weight up toward shoulders',
@@ -777,7 +777,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps per arm',
     equipment: ['Dumbbell'],
     targetMuscles: ['Biceps Peak'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Sit with elbow braced against inner thigh',
       'Curl dumbbell toward shoulder',
@@ -795,7 +795,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells', 'Incline bench'],
     targetMuscles: ['Biceps Long Head'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=500&h=400&fit=crop',
     steps: [
       'Sit on incline bench with arms hanging',
       'Curl dumbbells up toward shoulders',
@@ -813,7 +813,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 12-15 reps',
     equipment: ['Cable machine', 'Straight bar or EZ bar'],
     targetMuscles: ['Biceps'],
-    image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=500&h=400&fit=crop',
     steps: [
       'Stand facing low pulley',
       'Grip bar with underhand grip',
@@ -849,7 +849,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 10-12 reps',
     equipment: ['Dumbbells'],
     targetMuscles: ['Biceps', 'Brachialis', 'Forearms'],
-    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500&h=400&fit=crop',
     steps: [
       'Curl dumbbells up with palms up',
       'At top, rotate wrists to palms down',
@@ -867,7 +867,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 8-10 reps',
     equipment: ['Dumbbells', 'Incline bench'],
     targetMuscles: ['Upper chest', 'Front deltoids', 'Triceps'],
-    image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1571388208497-71bedc66e932?w=500&h=400&fit=crop',
     steps: [
       'Set bench to 30-45 degree incline',
       'Hold dumbbells at chest level with palms facing forward',
@@ -885,7 +885,7 @@ export const upperBodyExercises: Exercise[] = [
     duration: '3 sets of 15-20 reps',
     equipment: ['Dumbbells', 'Barbell'],
     targetMuscles: ['Forearm Flexors'],
-    image: 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=500&h=400&fit=crop',
+    image: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=500&h=400&fit=crop',
     steps: [
       'Rest forearms on thighs, wrists over knees',
       'Hold weight with palms up',

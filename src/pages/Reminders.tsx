@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { TimePicker } from '@/components/ui/time-picker';
 import { Bell, Plus, Trash2, Clock, BellRing, Volume2, VolumeX, CheckCircle2, AlertCircle, Tag, Flame, Star, Zap, Repeat, Sparkles } from 'lucide-react';
 import { SoundButton } from '@/components/SoundButton';
 import { useToast } from '@/hooks/use-toast';
@@ -474,15 +475,10 @@ const Reminders = () => {
                 placeholder="What should I remind you about?"
                 className="flex-1 h-12 text-base font-medium rounded-xl bg-background border-2 border-input focus:border-primary"
               />
-              <div className="flex items-center gap-2 shrink-0">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="time"
-                  value={newReminderTime}
-                  onChange={(e) => setNewReminderTime(e.target.value)}
-                  className="h-12 w-32 text-base font-bold text-center rounded-xl bg-background border-2 border-primary/30 focus:border-primary [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                />
-              </div>
+              <TimePicker
+                value={newReminderTime}
+                onChange={setNewReminderTime}
+              />
             </div>
 
             {/* Advanced Options Toggle */}
