@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Play, Square, RotateCcw, AlertTriangle, CheckCircle2, Zap, Target, Activity, Video, Eye } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Camera, Play, Square, RotateCcw, AlertTriangle, CheckCircle2, Zap, Target, Activity, Video, Eye, Volume2, VolumeX, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { exercises } from '@/data/exercises';
 import { Exercise } from '@/types/exercise';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { voiceFeedback } from '@/utils/voiceFeedback';
 
 interface FeedbackItem {
   type: 'correct' | 'warning' | 'error';
@@ -16,9 +18,21 @@ interface FeedbackItem {
   timestamp: number;
 }
 
+interface BodyPartTracking {
+  leftArm: string;
+  rightArm: string;
+  leftLeg: string;
+  rightLeg: string;
+  spine: string;
+  overall: string;
+}
+
 const AIExerciseCamera = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const [isStreaming, setIsStreaming] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<string>('');
@@ -26,42 +40,148 @@ const AIExerciseCamera = () => {
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
   const [currentForm, setCurrentForm] = useState<'good' | 'warning' | 'bad' | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [analysisInterval, setAnalysisIntervalState] = useState<NodeJS.Timeout | null>(null);
   const [lastAnalysisTime, setLastAnalysisTime] = useState(0);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [isLoadingCamera, setIsLoadingCamera] = useState(false);
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string>('');
+  const [bodyTracking, setBodyTracking] = useState<BodyPartTracking | null>(null);
+  const [consecutiveGoodReps, setConsecutiveGoodReps] = useState(0);
 
   const selectedExerciseData = exercises.find(e => e.id === selectedExercise);
 
+  // Get available cameras
+  const getAvailableCameras = async () => {
+    try {
+      // Request permission first to get device labels
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      setAvailableCameras(videoDevices);
+      if (videoDevices.length > 0 && !selectedCamera) {
+        setSelectedCamera(videoDevices[0].deviceId);
+      }
+      return videoDevices;
+    } catch (error) {
+      console.error('Error getting cameras:', error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    getAvailableCameras();
+    voiceFeedback.setEnabled(voiceEnabled);
+  }, []);
+
+  useEffect(() => {
+    voiceFeedback.setEnabled(voiceEnabled);
+  }, [voiceEnabled]);
+
   const startCamera = async () => {
     try {
+      setIsLoadingCamera(true);
       setCameraError(null);
-      const stream = await navigator.mediaDevices.getUserMedia({
+      
+      // Stop any existing stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+
+      // Get cameras if not already loaded
+      const cameras = availableCameras.length > 0 ? availableCameras : await getAvailableCameras();
+      
+      const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        }
-      });
+          deviceId: selectedCamera ? { exact: selectedCamera } : undefined,
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 30, min: 15 },
+          facingMode: selectedCamera ? undefined : 'user'
+        },
+        audio: false
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        
+        await new Promise((resolve, reject) => {
+          if (videoRef.current) {
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current?.play()
+                .then(resolve)
+                .catch(reject);
+            };
+            videoRef.current.onerror = reject;
+          }
+        });
+        
         setIsStreaming(true);
+        toast.success('Camera connected successfully!');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error accessing camera:', error);
-      setCameraError('Unable to access camera. Please ensure camera permissions are granted.');
-      toast.error('Camera access denied or unavailable');
+      let errorMessage = 'Unable to access camera.';
+      
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage = 'No camera found. Please connect a camera and try again.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage = 'Camera is in use by another application. Please close other apps using the camera.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Camera does not meet requirements. Trying with default settings...';
+        // Retry with simpler constraints
+        try {
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true, 
+            audio: false 
+          });
+          streamRef.current = fallbackStream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = fallbackStream;
+            await videoRef.current.play();
+            setIsStreaming(true);
+            toast.success('Camera connected with fallback settings');
+            return;
+          }
+        } catch (fallbackError) {
+          errorMessage = 'Unable to access camera with any settings.';
+        }
+      }
+      
+      setCameraError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoadingCamera(false);
     }
   };
 
   const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     setIsStreaming(false);
     stopAnalysis();
+  };
+
+  const switchCamera = async () => {
+    const currentIndex = availableCameras.findIndex(c => c.deviceId === selectedCamera);
+    const nextIndex = (currentIndex + 1) % availableCameras.length;
+    setSelectedCamera(availableCameras[nextIndex].deviceId);
+    
+    if (isStreaming) {
+      await stopCamera();
+      setTimeout(() => startCamera(), 100);
+    }
   };
 
   const captureFrame = (): string | null => {
@@ -71,25 +191,33 @@ const AIExerciseCamera = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    if (!ctx) return null;
+    if (!ctx || video.readyState < 2) return null;
     
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    
+    // Mirror the image for better user experience
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     
-    return canvas.toDataURL('image/jpeg', 0.7);
+    return canvas.toDataURL('image/jpeg', 0.8);
   };
 
-  const analyzeFrame = async () => {
-    if (!selectedExercise || !isStreaming) return;
+  const analyzeFrame = useCallback(async () => {
+    if (!selectedExercise || !isStreaming || !isAnalyzing) return;
     
     const now = Date.now();
-    if (now - lastAnalysisTime < 3000) return; // Throttle to every 3 seconds
+    if (now - lastAnalysisTime < 2500) return; // Throttle to every 2.5 seconds
     
     setLastAnalysisTime(now);
     
     const frameData = captureFrame();
-    if (!frameData) return;
+    if (!frameData) {
+      console.log('Failed to capture frame');
+      return;
+    }
 
     try {
       const { data, error } = await supabase.functions.invoke('analyze-exercise', {
@@ -97,7 +225,8 @@ const AIExerciseCamera = () => {
           imageData: frameData,
           exerciseId: selectedExercise,
           exerciseName: selectedExerciseData?.name || '',
-          exerciseSteps: selectedExerciseData?.steps || []
+          exerciseSteps: selectedExerciseData?.steps || [],
+          trackBodyParts: true
         }
       });
 
@@ -107,10 +236,32 @@ const AIExerciseCamera = () => {
       }
 
       if (data) {
+        // Update body part tracking
+        if (data.bodyTracking) {
+          setBodyTracking(data.bodyTracking);
+        }
+
         // Update rep count if a rep was completed
         if (data.repCompleted) {
-          setRepCount(prev => prev + 1);
+          setRepCount(prev => {
+            const newCount = prev + 1;
+            voiceFeedback.speakRepComplete(newCount);
+            return newCount;
+          });
           addFeedback('correct', 'Rep completed! Great job!');
+          
+          // Track consecutive good form reps
+          if (data.formQuality === 'good') {
+            setConsecutiveGoodReps(prev => {
+              const newCount = prev + 1;
+              if (newCount === 3 || newCount === 5 || newCount === 10) {
+                voiceFeedback.speakEncouragement();
+              }
+              return newCount;
+            });
+          } else {
+            setConsecutiveGoodReps(0);
+          }
         }
 
         // Update form quality
@@ -118,22 +269,26 @@ const AIExerciseCamera = () => {
           setCurrentForm(data.formQuality);
         }
 
-        // Add feedback messages
+        // Add feedback messages with voice
         if (data.feedback && data.feedback.length > 0) {
           data.feedback.forEach((fb: { type: string; message: string }) => {
             addFeedback(fb.type as 'correct' | 'warning' | 'error', fb.message);
+            
+            // Speak corrections and warnings
+            if (fb.type === 'warning' || fb.type === 'error') {
+              voiceFeedback.speakFormCorrection(fb.message);
+            }
           });
         }
       }
     } catch (err) {
       console.error('Failed to analyze frame:', err);
     }
-  };
+  }, [selectedExercise, isStreaming, isAnalyzing, lastAnalysisTime, selectedExerciseData]);
 
   const addFeedback = (type: 'correct' | 'warning' | 'error', message: string) => {
     setFeedback(prev => {
       const newFeedback = { type, message, timestamp: Date.now() };
-      // Keep only last 5 feedback items
       return [newFeedback, ...prev.slice(0, 4)];
     });
   };
@@ -148,19 +303,28 @@ const AIExerciseCamera = () => {
     setRepCount(0);
     setFeedback([]);
     setCurrentForm(null);
+    setBodyTracking(null);
+    setConsecutiveGoodReps(0);
+    
+    voiceFeedback.speakStart();
     
     // Start periodic analysis
-    const interval = setInterval(analyzeFrame, 3000);
-    setAnalysisIntervalState(interval);
+    analysisIntervalRef.current = setInterval(() => {
+      analyzeFrame();
+    }, 2500);
     
     toast.success('AI analysis started! Position yourself in frame.');
   };
 
   const stopAnalysis = () => {
     setIsAnalyzing(false);
-    if (analysisInterval) {
-      clearInterval(analysisInterval);
-      setAnalysisIntervalState(null);
+    if (analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+      analysisIntervalRef.current = null;
+    }
+    
+    if (repCount > 0) {
+      voiceFeedback.speakStop();
     }
   };
 
@@ -168,20 +332,34 @@ const AIExerciseCamera = () => {
     setRepCount(0);
     setFeedback([]);
     setCurrentForm(null);
+    setBodyTracking(null);
+    setConsecutiveGoodReps(0);
+    voiceFeedback.stop();
   };
 
   useEffect(() => {
     return () => {
       stopCamera();
+      voiceFeedback.stop();
     };
   }, []);
 
+  // Update analysis interval when dependencies change
+  useEffect(() => {
+    if (isAnalyzing && analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+      analysisIntervalRef.current = setInterval(() => {
+        analyzeFrame();
+      }, 2500);
+    }
+  }, [analyzeFrame, isAnalyzing]);
+
   const getFormColor = () => {
     switch (currentForm) {
-      case 'good': return 'text-green-500 border-green-500';
-      case 'warning': return 'text-yellow-500 border-yellow-500';
-      case 'bad': return 'text-red-500 border-red-500';
-      default: return 'text-muted-foreground border-muted';
+      case 'good': return 'text-green-500 border-green-500 bg-green-500/20';
+      case 'warning': return 'text-yellow-500 border-yellow-500 bg-yellow-500/20';
+      case 'bad': return 'text-red-500 border-red-500 bg-red-500/20';
+      default: return 'text-muted-foreground border-muted bg-muted/20';
     }
   };
 
@@ -194,17 +372,46 @@ const AIExerciseCamera = () => {
     }
   };
 
+  const getBodyPartStatus = (status: string) => {
+    if (status.toLowerCase().includes('good') || status.toLowerCase().includes('correct')) {
+      return 'bg-green-500/20 text-green-600 border-green-500/30';
+    }
+    if (status.toLowerCase().includes('warning') || status.toLowerCase().includes('adjust')) {
+      return 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30';
+    }
+    if (status.toLowerCase().includes('error') || status.toLowerCase().includes('incorrect')) {
+      return 'bg-red-500/20 text-red-600 border-red-500/30';
+    }
+    return 'bg-muted/20 text-muted-foreground border-muted/30';
+  };
+
   return (
     <Card className="glass-bold border-2 border-primary/20 overflow-hidden">
       <div className="h-1.5 w-full bg-gradient-to-r from-primary via-accent to-success" />
       <CardHeader className="pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/20">
-            <Eye className="h-6 w-6 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/20">
+              <Eye className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xl font-bold text-foreground">AI Exercise Coach</CardTitle>
+              <p className="text-sm text-muted-foreground">Real-time form analysis & rep counting</p>
+            </div>
           </div>
-          <div>
-            <CardTitle className="text-xl font-bold text-foreground">AI Exercise Coach</CardTitle>
-            <p className="text-sm text-muted-foreground">Real-time form analysis & rep counting</p>
+          
+          {/* Voice Toggle */}
+          <div className="flex items-center gap-2">
+            {voiceEnabled ? (
+              <Volume2 className="h-5 w-5 text-primary" />
+            ) : (
+              <VolumeX className="h-5 w-5 text-muted-foreground" />
+            )}
+            <Switch
+              checked={voiceEnabled}
+              onCheckedChange={setVoiceEnabled}
+              aria-label="Toggle voice feedback"
+            />
           </div>
         </div>
       </CardHeader>
@@ -216,7 +423,7 @@ const AIExerciseCamera = () => {
             <SelectTrigger className="w-full bg-background border-2">
               <SelectValue placeholder="Choose an exercise to track" />
             </SelectTrigger>
-            <SelectContent className="bg-background border-2 max-h-60">
+            <SelectContent className="bg-background border-2 max-h-60 z-50">
               {exercises.map((exercise) => (
                 <SelectItem key={exercise.id} value={exercise.id}>
                   {exercise.name}
@@ -226,27 +433,66 @@ const AIExerciseCamera = () => {
           </Select>
         </div>
 
+        {/* Camera Selection */}
+        {availableCameras.length > 1 && (
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-muted-foreground">Camera</label>
+            <Select value={selectedCamera} onValueChange={setSelectedCamera}>
+              <SelectTrigger className="w-full bg-background border-2">
+                <SelectValue placeholder="Select camera" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border-2 z-50">
+                {availableCameras.map((camera) => (
+                  <SelectItem key={camera.deviceId} value={camera.deviceId}>
+                    {camera.label || `Camera ${availableCameras.indexOf(camera) + 1}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Camera View */}
         <div className="relative aspect-video bg-black/50 rounded-xl overflow-hidden border-2 border-muted">
           <video
             ref={videoRef}
             className={cn(
               "w-full h-full object-cover",
-              !isStreaming && "hidden"
+              isStreaming ? "block" : "hidden"
             )}
+            style={{ transform: 'scaleX(-1)' }}
             playsInline
             muted
+            autoPlay
           />
           <canvas ref={canvasRef} className="hidden" />
           
           {!isStreaming && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-              <div className="p-4 rounded-full bg-muted/20">
-                <Video className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground text-center px-4">
-                {cameraError || 'Click "Start Camera" to begin'}
-              </p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-4">
+              {isLoadingCamera ? (
+                <>
+                  <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                  <p className="text-muted-foreground text-center">Connecting to camera...</p>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 rounded-full bg-muted/20">
+                    <Video className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground text-center px-4">
+                    {cameraError || 'Click "Start Camera" to begin'}
+                  </p>
+                  {cameraError && (
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setCameraError(null);
+                      getAvailableCameras();
+                    }}>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Retry
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -257,7 +503,7 @@ const AIExerciseCamera = () => {
                 {getFormIcon()}
                 <span className="ml-2">{currentForm ? currentForm.toUpperCase() : 'ANALYZING'}</span>
               </Badge>
-              <Badge className="text-lg font-bold px-4 py-2 bg-primary text-primary-foreground">
+              <Badge className="text-lg font-bold px-4 py-2 bg-primary text-primary-foreground border-2 border-primary">
                 <Target className="h-4 w-4 mr-2" />
                 {repCount} REPS
               </Badge>
@@ -278,10 +524,15 @@ const AIExerciseCamera = () => {
           {!isStreaming ? (
             <Button 
               onClick={startCamera}
+              disabled={isLoadingCamera}
               className="flex-1 gradient-primary text-primary-foreground font-bold"
             >
-              <Camera className="h-4 w-4 mr-2" />
-              Start Camera
+              {isLoadingCamera ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Camera className="h-4 w-4 mr-2" />
+              )}
+              {isLoadingCamera ? 'Connecting...' : 'Start Camera'}
             </Button>
           ) : (
             <>
@@ -293,6 +544,16 @@ const AIExerciseCamera = () => {
                 <Square className="h-4 w-4 mr-2" />
                 Stop Camera
               </Button>
+              
+              {availableCameras.length > 1 && (
+                <Button 
+                  onClick={switchCamera}
+                  variant="outline"
+                  className="border-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              )}
               
               {!isAnalyzing ? (
                 <Button 
@@ -325,6 +586,54 @@ const AIExerciseCamera = () => {
             </>
           )}
         </div>
+
+        {/* Body Part Tracking Display */}
+        {bodyTracking && isAnalyzing && (
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Body Tracking
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {bodyTracking.leftArm && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.leftArm))}>
+                  <div className="font-bold">Left Arm</div>
+                  <div className="truncate">{bodyTracking.leftArm}</div>
+                </div>
+              )}
+              {bodyTracking.rightArm && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.rightArm))}>
+                  <div className="font-bold">Right Arm</div>
+                  <div className="truncate">{bodyTracking.rightArm}</div>
+                </div>
+              )}
+              {bodyTracking.leftLeg && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.leftLeg))}>
+                  <div className="font-bold">Left Leg</div>
+                  <div className="truncate">{bodyTracking.leftLeg}</div>
+                </div>
+              )}
+              {bodyTracking.rightLeg && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.rightLeg))}>
+                  <div className="font-bold">Right Leg</div>
+                  <div className="truncate">{bodyTracking.rightLeg}</div>
+                </div>
+              )}
+              {bodyTracking.spine && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.spine))}>
+                  <div className="font-bold">Spine/Posture</div>
+                  <div className="truncate">{bodyTracking.spine}</div>
+                </div>
+              )}
+              {bodyTracking.overall && (
+                <div className={cn("p-2 rounded-lg border text-xs font-medium text-center", getBodyPartStatus(bodyTracking.overall))}>
+                  <div className="font-bold">Overall</div>
+                  <div className="truncate">{bodyTracking.overall}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Stats Display */}
         {(repCount > 0 || feedback.length > 0) && (

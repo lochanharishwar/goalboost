@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageData, exerciseId, exerciseName, exerciseSteps } = await req.json();
+    const { imageData, exerciseId, exerciseName, exerciseSteps, trackBodyParts } = await req.json();
     
     if (!imageData || !exerciseId || !exerciseName) {
       return new Response(
@@ -26,30 +26,46 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Use Gemini for vision analysis
-    const systemPrompt = `You are an expert fitness coach AI that analyzes exercise form from images.
-Your task is to analyze the person's form in the image and provide feedback.
+    // Enhanced system prompt with body part tracking
+    const systemPrompt = `You are an expert fitness coach AI that analyzes exercise form from images with detailed body part tracking.
+Your task is to analyze the person's form in the image and provide comprehensive feedback.
 
 For the exercise "${exerciseName}", the proper steps are:
-${exerciseSteps?.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n')}
+${exerciseSteps?.map((step: string, i: number) => `${i + 1}. ${step}`).join('\n') || 'Standard exercise form applies'}
 
 Analyze the image and respond with a JSON object containing:
 {
-  "repCompleted": boolean, // true if you detect a completed repetition (transition from starting position through the movement and back)
+  "repCompleted": boolean, // true if you detect a completed repetition
   "formQuality": "good" | "warning" | "bad", // overall form assessment
+  "bodyTracking": {
+    "leftArm": "status description (Good/Adjust needed/Incorrect)",
+    "rightArm": "status description",
+    "leftLeg": "status description",
+    "rightLeg": "status description",
+    "spine": "posture status (Straight/Curved/Needs adjustment)",
+    "overall": "overall body alignment status"
+  },
   "feedback": [
-    { "type": "correct" | "warning" | "error", "message": "specific feedback about form" }
+    { "type": "correct" | "warning" | "error", "message": "specific feedback about form - keep it SHORT for voice" }
   ]
 }
 
-Focus on:
-- Body positioning and alignment
-- Range of motion
-- Common mistakes for this specific exercise
-- Safety concerns
+CRITICAL TRACKING POINTS:
+1. ARMS: Check elbow angles, wrist alignment, shoulder position, arm extension
+2. LEGS: Check knee tracking over toes, hip alignment, ankle position, leg spacing
+3. SPINE/POSTURE: Check for neutral spine, avoid rounding, core engagement, head position
+4. MOVEMENT: Track the full range of motion for the exercise
 
-Be encouraging but accurate. Keep feedback concise and actionable.
-If you cannot see the person clearly or they are not performing the exercise, indicate that.`;
+FEEDBACK GUIDELINES:
+- Keep feedback messages SHORT (under 10 words) so they can be spoken aloud
+- Prioritize safety-critical corrections
+- Be encouraging but accurate
+- Use action words: "Lower hips", "Straighten back", "Extend arms fully"
+
+If you cannot see the person clearly or they are not performing the exercise:
+- Set formQuality to null
+- Set bodyTracking values to "Not visible"
+- Provide helpful positioning feedback`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -66,7 +82,10 @@ If you cannot see the person clearly or they are not performing the exercise, in
             content: [
               {
                 type: "text",
-                text: `Analyze this frame from a video of someone performing "${exerciseName}". Provide form feedback and determine if a rep was completed.`
+                text: `Analyze this frame from a video of someone performing "${exerciseName}". 
+Track all visible body parts (arms, legs, spine) and their positions.
+Provide form feedback and determine if a rep was completed.
+Keep feedback messages very short for voice output.`
               },
               {
                 type: "image_url",
@@ -113,12 +132,32 @@ If you cannot see the person clearly or they are not performing the exercise, in
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         analysisResult = JSON.parse(jsonMatch[0]);
+        
+        // Ensure bodyTracking exists with defaults
+        if (!analysisResult.bodyTracking) {
+          analysisResult.bodyTracking = {
+            leftArm: "Analyzing...",
+            rightArm: "Analyzing...",
+            leftLeg: "Analyzing...",
+            rightLeg: "Analyzing...",
+            spine: "Analyzing...",
+            overall: "Analyzing..."
+          };
+        }
       } else {
         // Default response if parsing fails
         analysisResult = {
           repCompleted: false,
           formQuality: "warning",
-          feedback: [{ type: "warning", message: "Unable to fully analyze. Please ensure you're visible in frame." }]
+          bodyTracking: {
+            leftArm: "Position yourself in frame",
+            rightArm: "Position yourself in frame",
+            leftLeg: "Position yourself in frame",
+            rightLeg: "Position yourself in frame",
+            spine: "Position yourself in frame",
+            overall: "Ensure full body is visible"
+          },
+          feedback: [{ type: "warning", message: "Position yourself in frame" }]
         };
       }
     } catch (parseError) {
@@ -126,7 +165,15 @@ If you cannot see the person clearly or they are not performing the exercise, in
       analysisResult = {
         repCompleted: false,
         formQuality: "warning",
-        feedback: [{ type: "warning", message: "Analysis in progress. Continue your exercise." }]
+        bodyTracking: {
+          leftArm: "Processing...",
+          rightArm: "Processing...",
+          leftLeg: "Processing...",
+          rightLeg: "Processing...",
+          spine: "Processing...",
+          overall: "Continue your exercise"
+        },
+        feedback: [{ type: "warning", message: "Continue your exercise" }]
       };
     }
 
@@ -141,6 +188,7 @@ If you cannot see the person clearly or they are not performing the exercise, in
         error: error instanceof Error ? error.message : "Unknown error",
         repCompleted: false,
         formQuality: null,
+        bodyTracking: null,
         feedback: []
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
