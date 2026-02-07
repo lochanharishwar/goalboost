@@ -1,22 +1,104 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+  'https://vnshckquumonswjumvsl.lovable.app',
+  'https://vnshckquumonswjumvsl.lovableproject.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.some(allowed =>
+    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
+  ) ? origin : ALLOWED_ORIGINS[0];
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
+
+// Input validation helpers
+const MAX_EXERCISE_NAME_LENGTH = 100;
+const MAX_EXERCISE_ID_LENGTH = 100;
+const MAX_STEP_LENGTH = 300;
+const MAX_STEPS_COUNT = 20;
+
+const SUSPICIOUS_PATTERNS = [
+  /ignore.*previous.*instruction/i,
+  /system\s*:/i,
+  /you\s+are\s+now/i,
+  /admin.*mode/i,
+  /bypass.*safety/i,
+  /disregard.*guideline/i,
+  /forget.*everything/i,
+  /new\s+instruction/i,
+  /override.*prompt/i,
+  /pretend\s+to\s+be/i,
+  /act\s+as\s+if/i,
+  /jailbreak/i,
+];
+
+function detectPromptInjection(text: string): boolean {
+  return SUSPICIOUS_PATTERNS.some(pattern => pattern.test(text));
+}
+
+function sanitizeString(input: unknown, maxLength: number): string | null {
+  if (input === null || input === undefined) return null;
+  if (typeof input !== 'string') return null;
+  return input.trim().slice(0, maxLength).replace(/[<>{}[\]\\]/g, '');
+}
+
+function sanitizeStepsArray(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter((item): item is string => typeof item === 'string')
+    .slice(0, MAX_STEPS_COUNT)
+    .map(item => item.trim().slice(0, MAX_STEP_LENGTH).replace(/[<>{}[\]\\]/g, ''))
+    .filter(item => item.length > 0);
+}
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin');
+  const corsHeaders = getCorsHeaders(origin);
+
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageData, exerciseId, exerciseName, exerciseSteps, trackBodyParts } = await req.json();
-    
+    let rawBody;
+    try {
+      rawBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { imageData, trackBodyParts } = rawBody;
+
+    // Validate and sanitize inputs
+    const exerciseId = sanitizeString(rawBody.exerciseId, MAX_EXERCISE_ID_LENGTH);
+    const exerciseName = sanitizeString(rawBody.exerciseName, MAX_EXERCISE_NAME_LENGTH);
+    const exerciseSteps = sanitizeStepsArray(rawBody.exerciseSteps);
+
     if (!imageData || !exerciseId || !exerciseName) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check for prompt injection attempts
+    if (detectPromptInjection(exerciseName) || exerciseSteps.some(step => detectPromptInjection(step))) {
+      console.warn('Potential prompt injection attempt detected in analyze-exercise');
+      return new Response(
+        JSON.stringify({ error: "Invalid input detected. Please use appropriate fitness-related terms." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
