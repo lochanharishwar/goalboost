@@ -1,4 +1,4 @@
-import { Moon, Sun, User, Zap, Calendar, Menu, X, LogOut } from 'lucide-react';
+import { Moon, Sun, Zap, Calendar, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -7,8 +7,6 @@ import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SoundButton } from '@/components/SoundButton';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
 interface HeaderProps {
   selectedDate?: Date;
@@ -21,17 +19,6 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDarkMode, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: '👋 Signed out',
-      description: 'You have been signed out successfully.',
-    });
-    navigate('/auth');
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -139,15 +126,6 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
               >
                 {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-primary" />}
               </SoundButton>
-              <SoundButton
-                variant="outline"
-                size="icon"
-                onClick={handleSignOut}
-                className="bg-primary/10 border-primary/30 text-foreground hover:bg-destructive/20 hover:border-destructive/30 transition-all duration-300 shadow-md"
-                title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-              >
-                <LogOut className="h-4 w-4" />
-              </SoundButton>
             </div>
           </div>
         </div>
@@ -179,15 +157,6 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
                   className="bg-primary/10 border-primary/30 text-foreground hover:bg-primary/20 transition-all duration-300 shadow-md"
                 >
                   {isDarkMode ? <Sun className="h-4 w-4 text-warning" /> : <Moon className="h-4 w-4 text-primary" />}
-                </SoundButton>
-                <SoundButton
-                  variant="outline"
-                  size="icon"
-                  onClick={handleSignOut}
-                  className="bg-primary/10 border-primary/30 text-foreground hover:bg-destructive/20 hover:border-destructive/30 transition-all duration-300 shadow-md"
-                  title={user?.email ? `Sign out (${user.email})` : 'Sign out'}
-                >
-                  <LogOut className="h-4 w-4" />
                 </SoundButton>
               </div>
             </nav>
