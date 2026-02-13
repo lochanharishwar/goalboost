@@ -12,8 +12,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useClickSound } from '@/utils/soundUtils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Reminder {
   id: string;
@@ -49,51 +47,27 @@ const Reminders = () => {
   const [ringingReminderId, setRingingReminderId] = useState<string | null>(null);
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
-  const { user } = useAuth();
+  
   const alarmContextRef = useRef<AudioContext | null>(null);
   const alarmIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Load reminders from Supabase
+  // Load reminders from localStorage
   useEffect(() => {
-    const loadReminders = async () => {
-      const { data, error } = await supabase
-        .from('reminders')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (data && !error) {
-        setReminders(data.map(r => ({
-          id: r.id,
-          text: r.text,
-          time: r.time,
-          isActive: r.is_active,
-          createdAt: r.created_at,
-          hasDeviceAlarm: r.has_device_alarm,
-          repeatDays: r.repeat_days || [],
-          priority: (r.priority || 'medium') as 'low' | 'medium' | 'high',
+    try {
+      const savedReminders = localStorage.getItem('goalflow-reminders');
+      if (savedReminders) {
+        const parsedReminders = JSON.parse(savedReminders);
+        setReminders(parsedReminders.map((r: any) => ({
+          ...r,
+          repeatDays: r.repeatDays || [],
+          priority: r.priority || 'medium',
           category: r.category || 'general',
           notes: r.notes || ''
         })));
-      } else {
-        try {
-          const savedReminders = localStorage.getItem('goalflow-reminders');
-          if (savedReminders) {
-            const parsedReminders = JSON.parse(savedReminders);
-            setReminders(parsedReminders.map((r: any) => ({
-              ...r,
-              repeatDays: r.repeatDays || [],
-              priority: r.priority || 'medium',
-              category: r.category || 'general',
-              notes: r.notes || ''
-            })));
-          }
-        } catch (error) {
-          console.warn('Failed to load saved reminders:', error);
-        }
       }
-    };
-
-    loadReminders();
+    } catch (error) {
+      console.warn('Failed to load saved reminders:', error);
+    }
 
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
@@ -210,7 +184,7 @@ const Reminders = () => {
     }
   };
 
-  const addReminder = async () => {
+  const addReminder = () => {
     if (newReminderText.trim() && newReminderTime) {
       playClickSound();
       const newReminder: Reminder = {
@@ -226,24 +200,7 @@ const Reminders = () => {
         notes: newReminderNotes.trim()
       };
 
-      const { error } = await supabase.from('reminders').insert({
-        id: newReminder.id,
-        text: newReminder.text,
-        time: newReminder.time,
-        is_active: newReminder.isActive,
-        has_device_alarm: newReminder.hasDeviceAlarm,
-        repeat_days: newReminder.repeatDays,
-        priority: newReminder.priority,
-        category: newReminder.category,
-        notes: newReminder.notes,
-        user_id: user?.id ?? '',
-      });
-
-      if (!error) {
-        setReminders([newReminder, ...reminders]);
-      } else {
-        setReminders([newReminder, ...reminders]);
-      }
+      setReminders([newReminder, ...reminders]);
       
       setNewReminderText('');
       setNewReminderTime('');
@@ -260,60 +217,43 @@ const Reminders = () => {
     }
   };
 
-  const toggleReminder = async (reminderId: string) => {
+  const toggleReminder = (reminderId: string) => {
     playClickSound();
-    const updated = reminders.map(reminder =>
+    setReminders(reminders.map(reminder =>
       reminder.id === reminderId 
         ? { ...reminder, isActive: !reminder.isActive }
         : reminder
-    );
-    setReminders(updated);
-    
-    const reminder = updated.find(r => r.id === reminderId);
-    if (reminder) {
-      await supabase.from('reminders').update({ is_active: reminder.isActive }).eq('id', reminderId);
-    }
+    ));
   };
 
-  const toggleDeviceAlarm = async (reminderId: string) => {
+  const toggleDeviceAlarm = (reminderId: string) => {
     playClickSound();
     if (notificationPermission !== 'granted') {
-      Notification.requestPermission().then(async permission => {
+      Notification.requestPermission().then(permission => {
         setNotificationPermission(permission);
         if (permission === 'granted') {
-          const updated = reminders.map(reminder =>
+          setReminders(reminders.map(reminder =>
             reminder.id === reminderId 
               ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
               : reminder
-          );
-          setReminders(updated);
-          const reminder = updated.find(r => r.id === reminderId);
-          if (reminder) {
-            await supabase.from('reminders').update({ has_device_alarm: reminder.hasDeviceAlarm }).eq('id', reminderId);
-          }
+          ));
         }
       });
     } else {
-      const updated = reminders.map(reminder =>
+      setReminders(reminders.map(reminder =>
         reminder.id === reminderId 
           ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
           : reminder
-      );
-      setReminders(updated);
-      const reminder = updated.find(r => r.id === reminderId);
-      if (reminder) {
-        await supabase.from('reminders').update({ has_device_alarm: reminder.hasDeviceAlarm }).eq('id', reminderId);
-      }
+      ));
     }
   };
 
-  const deleteReminder = async (reminderId: string) => {
+  const deleteReminder = (reminderId: string) => {
     playClickSound();
     if (ringingReminderId === reminderId) {
       stopAlarm();
     }
     setReminders(reminders.filter(reminder => reminder.id !== reminderId));
-    await supabase.from('reminders').delete().eq('id', reminderId);
     toast({
       title: "🗑️ Reminder Deleted",
       description: "Reminder has been removed.",
