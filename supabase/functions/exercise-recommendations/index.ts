@@ -55,8 +55,8 @@ function validateFitnessLevel(input: unknown): string {
 }
 
 serve(async (req) => {
-  const origin = req.headers.get('Origin');
-  const corsHeaders = getCorsHeaders(origin);
+  
+  const corsHeaders = corsHeaders;
   
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

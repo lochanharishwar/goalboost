@@ -48,8 +48,8 @@ function sanitizeStepsArray(input: unknown): string[] {
 }
 
 serve(async (req) => {
-  const origin = req.headers.get('Origin');
-  const corsHeaders = getCorsHeaders(origin);
+  
+  const corsHeaders = corsHeaders;
 
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
