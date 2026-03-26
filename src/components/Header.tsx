@@ -44,10 +44,7 @@ export const Header = ({ selectedDate, onDateSelect }: HeaderProps) => {
           {/* Brand Logo */}
           <div className="flex items-center gap-3 transform hover:scale-105 transition-all duration-300">
             <div className="relative">
-              <div className="p-2 rounded-xl bg-primary/15 shadow-lg">
-                <Zap className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-              </div>
-              <div className="absolute inset-0 bg-primary blur-xl opacity-25 animate-pulse"></div>
+              <img src={goalflowLogo} alt="GoalFlow Logo" width={36} height={36} className="rounded-xl shadow-lg" />
             </div>
             <div>
               <h1 className="text-lg sm:text-2xl font-extrabold text-gradient tracking-tight font-inter">
