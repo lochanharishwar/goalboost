@@ -6,13 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Input validation helpers
 const ALLOWED_FITNESS_LEVELS = ['beginner', 'intermediate', 'advanced'];
 const MAX_STRING_LENGTH = 200;
 const MAX_ARRAY_LENGTH = 20;
 const MAX_ARRAY_ITEM_LENGTH = 50;
 
-// Prompt injection detection patterns
 const SUSPICIOUS_PATTERNS = [
   /ignore.*previous.*instruction/i,
   /system\s*:/i,
@@ -59,7 +57,6 @@ serve(async (req) => {
   }
 
   try {
-    // Parse and validate input
     let rawBody;
     try {
       rawBody = await req.json();
@@ -70,14 +67,12 @@ serve(async (req) => {
       );
     }
 
-    // Validate and sanitize all inputs
     const fitnessLevel = validateFitnessLevel(rawBody.fitnessLevel);
     const goals = sanitizeString(rawBody.goals, MAX_STRING_LENGTH) || 'General fitness';
     const preferences = sanitizeString(rawBody.preferences, 500) || 'None';
     const availableEquipment = validateStringArray(rawBody.availableEquipment);
     const targetMuscles = validateStringArray(rawBody.targetMuscles, 10);
-    
-    // Check for prompt injection attempts
+
     if (detectPromptInjection(goals) || detectPromptInjection(preferences)) {
       console.warn('Potential prompt injection attempt detected');
       return new Response(
@@ -85,44 +80,73 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `You are a fitness coach. Return ONLY valid JSON with no markdown formatting. Based on user preferences, provide exercise recommendations in this exact structure:
+    const systemPrompt = `You are an elite certified personal trainer and sports scientist. Create detailed, science-backed workout plans. Return ONLY valid JSON with no markdown.
 
+Return this EXACT structure:
 {
-  "summary": "One sentence overview of the plan",
+  "summary": "2-3 sentence personalized overview explaining WHY this plan suits the user",
+  "estimatedDuration": "35-45 min",
+  "estimatedCalories": "250-350 kcal",
+  "difficulty": "beginner|intermediate|advanced",
+  "warmUp": [
+    { "name": "Exercise Name", "duration": "2 min", "purpose": "Brief why" }
+  ],
   "exercises": [
     {
       "name": "Exercise Name",
       "category": "upper-body|lower-body|core|cardio|full-body|flexibility",
       "sets": 3,
       "reps": "10-12",
-      "benefit": "One short benefit sentence",
-      "matchId": "exercise-id-from-library-if-exists"
+      "restBetweenSets": "60 sec",
+      "tempo": "2-1-2",
+      "benefit": "One specific benefit sentence",
+      "technique": "One key form cue to remember",
+      "matchId": "exercise-id-from-library-if-exists",
+      "intensity": "low|moderate|high"
     }
+  ],
+  "coolDown": [
+    { "name": "Stretch Name", "duration": "2 min", "purpose": "Brief why" }
   ],
   "focusAreas": [
     { "area": "Strength", "percentage": 40 },
     { "area": "Cardio", "percentage": 30 },
     { "area": "Flexibility", "percentage": 30 }
   ],
-  "tips": ["Tip 1", "Tip 2", "Tip 3"]
+  "weeklySchedule": {
+    "daysPerWeek": 3,
+    "suggestion": "Brief schedule like Mon/Wed/Fri with rest days in between"
+  },
+  "progressionPlan": "1-2 sentences on how to progress over next 4 weeks",
+  "tips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4", "Tip 5"],
+  "safetyNotes": ["Important safety consideration 1", "Safety note 2"]
 }
 
 Exercise library IDs to match: push-ups, pull-ups, bench-press, dumbbell-rows, overhead-press, dips, bicep-curls, tricep-extensions, lat-pulldowns, squats, lunges, deadlifts, leg-press, calf-raises, plank, crunches, leg-raises, russian-twists, mountain-climbers, burpees, jumping-jacks, high-knees, box-jumps, stretching, yoga-poses.
 
-Return 4-5 exercises. Use matchId only if exercise matches one from library.`;
+RULES:
+- Return 5-7 main exercises (not including warm-up/cool-down)
+- Include 2-3 warm-up exercises and 2-3 cool-down stretches
+- Tailor rest periods to fitness level (beginner: 90s, intermediate: 60s, advanced: 30-45s)
+- Include tempo notation (eccentric-pause-concentric in seconds)
+- Make tips actionable and specific, not generic
+- matchId ONLY if exercise matches library. Otherwise omit matchId.
+- Calorie estimates should be realistic for the workout type and duration`;
 
-    const userPrompt = `Create a workout plan:
-Level: ${fitnessLevel}
-Goals: ${goals}
-Equipment: ${availableEquipment.length > 0 ? availableEquipment.join(', ') : 'None'}
-Target: ${targetMuscles.length > 0 ? targetMuscles.join(', ') : 'Full body'}
-Notes: ${preferences}`;
+    const userPrompt = `Create a personalized workout plan:
+- Fitness Level: ${fitnessLevel}
+- Primary Goals: ${goals}
+- Available Equipment: ${availableEquipment.length > 0 ? availableEquipment.join(', ') : 'Bodyweight only (no equipment)'}
+- Target Muscle Groups: ${targetMuscles.length > 0 ? targetMuscles.join(', ') : 'Full body balanced'}
+- Additional Notes: ${preferences}
+
+Design the best possible plan for this person. Be specific and scientific.`;
 
     console.log('Generating exercise recommendations', { fitnessLevel, goals });
 
@@ -145,7 +169,7 @@ Notes: ${preferences}`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
@@ -158,16 +182,14 @@ Notes: ${preferences}`;
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     let content = data.choices?.[0]?.message?.content || '';
-    
-    // Clean markdown formatting if present
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
+
     let parsedPlan;
     try {
       parsedPlan = JSON.parse(content);

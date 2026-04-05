@@ -3,9 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, Loader2, Target, AlertCircle, Dumbbell, CheckCircle2, ArrowRight, Zap, Brain, WifiOff, Play, Clock } from 'lucide-react';
+import { Sparkles, Loader2, Target, AlertCircle, Dumbbell, CheckCircle2, ArrowRight, Zap, Brain, WifiOff, Play, Clock, Shield, TrendingUp, Flame, Calendar, Timer, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { exercises } from '@/data/exercises';
@@ -18,16 +17,28 @@ const muscleGroups = ['Chest', 'Back', 'Arms', 'Legs', 'Core', 'Shoulders'];
 
 interface ExercisePlan {
   summary: string;
+  estimatedDuration?: string;
+  estimatedCalories?: string;
+  difficulty?: string;
+  warmUp?: { name: string; duration: string; purpose: string }[];
   exercises: {
     name: string;
     category: string;
     sets: number;
     reps: string;
+    restBetweenSets?: string;
+    tempo?: string;
     benefit: string;
+    technique?: string;
     matchId?: string;
+    intensity?: string;
   }[];
+  coolDown?: { name: string; duration: string; purpose: string }[];
   focusAreas: { area: string; percentage: number }[];
+  weeklySchedule?: { daysPerWeek: number; suggestion: string };
+  progressionPlan?: string;
   tips: string[];
+  safetyNotes?: string[];
 }
 
 export const AIExerciseRecommendations = () => {
@@ -43,7 +54,6 @@ export const AIExerciseRecommendations = () => {
   const { toast } = useToast();
   const { setUserPreferences, setCurrentPlan, startExerciseInCoach } = useWorkoutPlan();
 
-  // Sync preferences with context
   useEffect(() => {
     setUserPreferences({
       fitnessLevel,
@@ -71,16 +81,11 @@ export const AIExerciseRecommendations = () => {
     setShowFallback(true);
     setPlan(null);
     setCurrentPlan(recommended);
-    toast({ 
-      title: "Offline Plan Ready!", 
-      description: `Using "${recommended.name}" template based on your preferences.` 
-    });
+    toast({ title: "Offline Plan Ready!", description: `Using "${recommended.name}" template based on your preferences.` });
   };
 
   const handleStartExercise = (matchId?: string) => {
-    if (matchId) {
-      startExerciseInCoach(matchId);
-    }
+    if (matchId) startExerciseInCoach(matchId);
   };
 
   const handleGetRecommendations = async (retryCount = 0) => {
@@ -113,7 +118,6 @@ export const AIExerciseRecommendations = () => {
           if (retryCount < maxRetries) {
             const delay = baseDelay * Math.pow(2, retryCount);
             const seconds = delay / 1000;
-            
             for (let i = seconds; i > 0; i--) {
               setRetryInfo(`High demand - waiting ${i}s before retry ${retryCount + 1}/${maxRetries}...`);
               await new Promise(resolve => setTimeout(resolve, 1000));
@@ -121,7 +125,6 @@ export const AIExerciseRecommendations = () => {
             setRetryInfo(null);
             return handleGetRecommendations(retryCount + 1);
           }
-          // After max retries, show fallback
           setIsLoading(false);
           showOfflineFallback();
           return;
@@ -132,15 +135,14 @@ export const AIExerciseRecommendations = () => {
       setPlan(data.plan);
       setCurrentPlan(data.plan);
       setRetryInfo(null);
-      toast({ title: "Plan Ready!", description: "Your workout plan has been generated." });
+      toast({ title: "Plan Ready!", description: "Your personalized workout plan has been generated." });
     } catch (err) {
       console.error('Error getting recommendations:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to get recommendations';
-      
+
       if (errorMessage.toLowerCase().includes('rate limit') && retryCount < maxRetries) {
         const delay = baseDelay * Math.pow(2, retryCount);
         const seconds = delay / 1000;
-        
         for (let i = seconds; i > 0; i--) {
           setRetryInfo(`High demand - waiting ${i}s before retry ${retryCount + 1}/${maxRetries}...`);
           await new Promise(resolve => setTimeout(resolve, 1000));
@@ -148,14 +150,13 @@ export const AIExerciseRecommendations = () => {
         setRetryInfo(null);
         return handleGetRecommendations(retryCount + 1);
       }
-      
-      // Show fallback on persistent errors
+
       if (retryCount >= maxRetries - 1 || errorMessage.toLowerCase().includes('rate limit')) {
         setIsLoading(false);
         showOfflineFallback();
         return;
       }
-      
+
       setError(errorMessage);
       setRetryInfo(null);
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
@@ -166,7 +167,15 @@ export const AIExerciseRecommendations = () => {
     }
   };
 
-  const currentDisplayPlan = showFallback && fallbackPlan ? fallbackPlan : plan;
+  const currentDisplayPlan: ExercisePlan | FallbackWorkoutPlan | null = showFallback && fallbackPlan ? fallbackPlan : plan;
+
+  const intensityColor = (intensity?: string) => {
+    switch (intensity) {
+      case 'high': return 'bg-red-500/20 text-red-300 border-red-400/30';
+      case 'moderate': return 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30';
+      default: return 'bg-green-500/20 text-green-300 border-green-400/30';
+    }
+  };
 
   return (
     <Card className="shadow-2xl border-0 bg-gradient-to-br from-purple-900/40 via-black/30 to-blue-900/40 backdrop-blur-xl border border-purple-500/30 overflow-hidden animate-fade-in">
@@ -184,7 +193,7 @@ export const AIExerciseRecommendations = () => {
           )}
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="p-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[400px]">
           {/* Left Side - Input */}
@@ -204,8 +213,8 @@ export const AIExerciseRecommendations = () => {
                     onClick={() => setFitnessLevel(level)}
                     className={cn(
                       "cursor-pointer text-sm capitalize px-4 py-2 transition-all duration-300 hover:scale-105",
-                      fitnessLevel === level 
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30" 
+                      fitnessLevel === level
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white border-transparent shadow-lg shadow-purple-500/30"
                         : "bg-black/40 text-gray-400 border-gray-600/40 hover:border-purple-400/50 hover:text-purple-300"
                     )}
                   >
@@ -304,7 +313,6 @@ export const AIExerciseRecommendations = () => {
 
           {/* Right Side - Output */}
           <div className="p-6 bg-gradient-to-br from-black/30 to-purple-900/10 min-h-[400px] flex flex-col">
-            {/* Retry Info Display */}
             {retryInfo && (
               <div className="p-4 rounded-xl bg-yellow-500/20 border border-yellow-500/30 flex items-center gap-3 animate-fade-in mb-4">
                 <Loader2 className="h-5 w-5 text-yellow-400 animate-spin shrink-0" />
@@ -312,7 +320,6 @@ export const AIExerciseRecommendations = () => {
               </div>
             )}
 
-            {/* Error Display */}
             {error && !retryInfo && !showFallback && (
               <div className="p-4 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center gap-3 animate-fade-in mb-4">
                 <AlertCircle className="h-5 w-5 text-red-400 shrink-0" />
@@ -328,7 +335,7 @@ export const AIExerciseRecommendations = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">Ready to Generate</h3>
                 <p className="text-gray-400 text-sm max-w-xs">
-                  Configure your preferences on the left and click generate to get your personalized workout plan.
+                  Configure your preferences and click generate for a science-backed, personalized workout plan with warm-up, exercises, and cool-down.
                 </p>
               </div>
             )}
@@ -340,13 +347,14 @@ export const AIExerciseRecommendations = () => {
                   <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl animate-pulse" />
                   <Loader2 className="h-16 w-16 text-purple-400 animate-spin relative" />
                 </div>
-                <p className="text-gray-300 mt-4">Analyzing your preferences...</p>
+                <p className="text-gray-300 mt-4">Building your personalized plan...</p>
+                <p className="text-gray-500 text-xs mt-1">Analyzing goals, muscles & fitness level</p>
               </div>
             )}
 
-            {/* Plan Display (Both AI and Fallback) */}
+            {/* Plan Display */}
             {currentDisplayPlan && !isLoading && (
-              <div className="space-y-5 overflow-y-auto animate-fade-in">
+              <div className="space-y-4 overflow-y-auto animate-fade-in max-h-[600px] custom-scrollbar pr-1">
                 {/* Offline Banner */}
                 {showFallback && fallbackPlan && (
                   <div className="p-3 rounded-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center gap-3">
@@ -361,12 +369,53 @@ export const AIExerciseRecommendations = () => {
                   </div>
                 )}
 
-                {/* Summary */}
-                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30">
-                  <p className="text-gray-200 text-sm italic">{currentDisplayPlan.summary}</p>
+                {/* Summary + Stats Row */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 space-y-3">
+                  <p className="text-gray-200 text-sm">{currentDisplayPlan.summary}</p>
+                  {'estimatedDuration' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).estimatedDuration && (
+                    <div className="flex flex-wrap gap-3">
+                      <span className="text-xs text-gray-300 flex items-center gap-1.5 bg-black/30 px-2.5 py-1 rounded-lg">
+                        <Clock className="h-3 w-3 text-blue-400" />
+                        {(currentDisplayPlan as ExercisePlan).estimatedDuration}
+                      </span>
+                      {(currentDisplayPlan as ExercisePlan).estimatedCalories && (
+                        <span className="text-xs text-gray-300 flex items-center gap-1.5 bg-black/30 px-2.5 py-1 rounded-lg">
+                          <Flame className="h-3 w-3 text-orange-400" />
+                          {(currentDisplayPlan as ExercisePlan).estimatedCalories}
+                        </span>
+                      )}
+                      {(currentDisplayPlan as ExercisePlan).difficulty && (
+                        <span className="text-xs text-gray-300 flex items-center gap-1.5 bg-black/30 px-2.5 py-1 rounded-lg">
+                          <Activity className="h-3 w-3 text-purple-400" />
+                          {(currentDisplayPlan as ExercisePlan).difficulty}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Focus Areas Chart */}
+                {/* Warm-Up */}
+                {'warmUp' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).warmUp && (currentDisplayPlan as ExercisePlan).warmUp!.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-gray-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <Flame className="h-3 w-3 text-orange-400" />
+                      Warm-Up
+                    </Label>
+                    <div className="space-y-1.5">
+                      {(currentDisplayPlan as ExercisePlan).warmUp!.map((item, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-between">
+                          <div>
+                            <span className="text-white text-xs font-medium">{item.name}</span>
+                            <p className="text-gray-500 text-[10px]">{item.purpose}</p>
+                          </div>
+                          <Badge className="text-[10px] bg-orange-500/20 text-orange-300 border-orange-400/30">{item.duration}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Focus Areas */}
                 <div className="space-y-2">
                   <Label className="text-gray-400 text-xs uppercase tracking-wider">Focus Distribution</Label>
                   <div className="space-y-2">
@@ -374,7 +423,7 @@ export const AIExerciseRecommendations = () => {
                       <div key={area.area} className="flex items-center gap-3">
                         <span className="text-xs text-gray-400 w-20 shrink-0">{area.area}</span>
                         <div className="flex-1 h-2 bg-black/40 rounded-full overflow-hidden">
-                          <div 
+                          <div
                             className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
                             style={{ width: `${area.percentage}%` }}
                           />
@@ -387,8 +436,11 @@ export const AIExerciseRecommendations = () => {
 
                 {/* Exercises List */}
                 <div className="space-y-2">
-                  <Label className="text-gray-400 text-xs uppercase tracking-wider">Your Exercises</Label>
-                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                  <Label className="text-gray-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                    <Dumbbell className="h-3 w-3 text-purple-400" />
+                    Main Exercises
+                  </Label>
+                  <div className="space-y-2">
                     {currentDisplayPlan.exercises.map((ex, idx) => {
                       const matched = getMatchedExercise(ex.matchId);
                       return (
@@ -402,15 +454,45 @@ export const AIExerciseRecommendations = () => {
                                 <Dumbbell className="h-3.5 w-3.5 text-purple-400" />
                               </div>
                               <span className="text-white text-sm font-medium">{ex.name}</span>
+                              {'intensity' in ex && ex.intensity && (
+                                <Badge className={cn("text-[10px] capitalize", intensityColor(ex.intensity))}>
+                                  {ex.intensity}
+                                </Badge>
+                              )}
                             </div>
                             <Badge className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
                               {ex.sets}×{ex.reps}
                             </Badge>
                           </div>
+
+                          {/* Rest & Tempo */}
+                          {'restBetweenSets' in ex && (ex.restBetweenSets || ex.tempo) && (
+                            <div className="flex gap-2">
+                              {ex.restBetweenSets && (
+                                <span className="text-[10px] text-gray-500 flex items-center gap-1 bg-black/30 px-2 py-0.5 rounded">
+                                  <Timer className="h-2.5 w-2.5" /> Rest: {ex.restBetweenSets}
+                                </span>
+                              )}
+                              {ex.tempo && (
+                                <span className="text-[10px] text-gray-500 bg-black/30 px-2 py-0.5 rounded">
+                                  Tempo: {ex.tempo}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
                           <p className="text-gray-400 text-xs flex items-start gap-1.5">
                             <CheckCircle2 className="h-3 w-3 text-green-400 mt-0.5 shrink-0" />
                             {ex.benefit}
                           </p>
+
+                          {'technique' in ex && ex.technique && (
+                            <p className="text-gray-500 text-[10px] flex items-start gap-1.5 bg-blue-500/5 p-1.5 rounded-lg">
+                              <Target className="h-3 w-3 text-blue-400 mt-0.5 shrink-0" />
+                              <span><strong className="text-blue-300">Form:</strong> {ex.technique}</span>
+                            </p>
+                          )}
+
                           {matched && (
                             <div className="flex items-center gap-2">
                               <a
@@ -435,6 +517,51 @@ export const AIExerciseRecommendations = () => {
                   </div>
                 </div>
 
+                {/* Cool-Down */}
+                {'coolDown' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).coolDown && (currentDisplayPlan as ExercisePlan).coolDown!.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-gray-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <Activity className="h-3 w-3 text-cyan-400" />
+                      Cool-Down
+                    </Label>
+                    <div className="space-y-1.5">
+                      {(currentDisplayPlan as ExercisePlan).coolDown!.map((item, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-between">
+                          <div>
+                            <span className="text-white text-xs font-medium">{item.name}</span>
+                            <p className="text-gray-500 text-[10px]">{item.purpose}</p>
+                          </div>
+                          <Badge className="text-[10px] bg-cyan-500/20 text-cyan-300 border-cyan-400/30">{item.duration}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weekly Schedule */}
+                {'weeklySchedule' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).weeklySchedule && (
+                  <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3.5 w-3.5 text-indigo-400" />
+                      <span className="text-xs font-medium text-indigo-300">
+                        {(currentDisplayPlan as ExercisePlan).weeklySchedule!.daysPerWeek} days/week
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-xs">{(currentDisplayPlan as ExercisePlan).weeklySchedule!.suggestion}</p>
+                  </div>
+                )}
+
+                {/* Progression Plan */}
+                {'progressionPlan' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).progressionPlan && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+                      <span className="text-xs font-medium text-emerald-300">4-Week Progression</span>
+                    </div>
+                    <p className="text-gray-400 text-xs">{(currentDisplayPlan as ExercisePlan).progressionPlan}</p>
+                  </div>
+                )}
+
                 {/* Tips */}
                 <div className="space-y-2">
                   <Label className="text-gray-400 text-xs uppercase tracking-wider">Pro Tips</Label>
@@ -447,6 +574,24 @@ export const AIExerciseRecommendations = () => {
                     ))}
                   </ul>
                 </div>
+
+                {/* Safety Notes */}
+                {'safetyNotes' in currentDisplayPlan && (currentDisplayPlan as ExercisePlan).safetyNotes && (currentDisplayPlan as ExercisePlan).safetyNotes!.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-gray-400 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                      <Shield className="h-3 w-3 text-red-400" />
+                      Safety Notes
+                    </Label>
+                    <ul className="space-y-1.5">
+                      {(currentDisplayPlan as ExercisePlan).safetyNotes!.map((note, idx) => (
+                        <li key={idx} className="text-xs text-red-300/80 flex items-start gap-2 p-2 rounded-lg bg-red-500/10 border border-red-500/15">
+                          <AlertCircle className="h-3 w-3 text-red-400 mt-0.5 shrink-0" />
+                          {note}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
           </div>
