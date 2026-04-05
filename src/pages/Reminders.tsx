@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { TimePicker } from '@/components/ui/time-picker';
-import { Bell, Plus, Trash2, Clock, BellRing, Volume2, VolumeX, CheckCircle2, AlertCircle, Tag, Flame, Star, Zap, Repeat, Sparkles } from 'lucide-react';
+import { Bell, Plus, Trash2, Clock, BellRing, Volume2, VolumeX, CheckCircle2, AlertCircle, Tag, Flame, Star, Zap, Repeat, Sparkles, Search, Filter, AlarmClock, Timer, Droplets, Coffee, Dumbbell as DumbbellIcon, BookOpen, Pill, Moon, Sun, Pause, RotateCcw, ChevronDown, ChevronUp, Trash, ToggleLeft, ToggleRight, Copy, Edit2, Check, X } from 'lucide-react';
 import { SoundButton } from '@/components/SoundButton';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,8 @@ interface Reminder {
   priority: 'low' | 'medium' | 'high';
   category: string;
   notes: string;
+  snoozedUntil?: string;
+  completedCount?: number;
 }
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -32,6 +34,24 @@ const PRIORITIES = [
   { value: 'low', label: 'Low', icon: Star },
   { value: 'medium', label: 'Medium', icon: Zap },
   { value: 'high', label: 'High', icon: Flame }
+];
+
+const QUICK_PRESETS = [
+  { text: 'Drink Water', icon: '💧', time: '', category: 'health', priority: 'low' as const },
+  { text: 'Take a Break', icon: '☕', time: '', category: 'work', priority: 'medium' as const },
+  { text: 'Stretch & Move', icon: '🧘', time: '', category: 'fitness', priority: 'medium' as const },
+  { text: 'Take Medication', icon: '💊', time: '', category: 'health', priority: 'high' as const },
+  { text: 'Study Session', icon: '📚', time: '', category: 'study', priority: 'medium' as const },
+  { text: 'Go for a Walk', icon: '🚶', time: '', category: 'fitness', priority: 'low' as const },
+  { text: 'Eye Rest (20-20-20)', icon: '👁️', time: '', category: 'health', priority: 'low' as const },
+  { text: 'Journal / Reflect', icon: '📝', time: '', category: 'personal', priority: 'low' as const },
+];
+
+const SNOOZE_OPTIONS = [
+  { label: '5 min', minutes: 5 },
+  { label: '10 min', minutes: 10 },
+  { label: '15 min', minutes: 15 },
+  { label: '30 min', minutes: 30 },
 ];
 
 const Reminders = () => {
@@ -45,9 +65,18 @@ const Reminders = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [ringingReminderId, setRingingReminderId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [filterPriority, setFilterPriority] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+  const [nextReminderCountdown, setNextReminderCountdown] = useState<string>('');
+  const [nextReminderText, setNextReminderText] = useState<string>('');
   const { toast } = useToast();
   const { playClickSound } = useClickSound();
-  
+
   const alarmContextRef = useRef<AudioContext | null>(null);
   const alarmIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -62,7 +91,8 @@ const Reminders = () => {
           repeatDays: r.repeatDays || [],
           priority: r.priority || 'medium',
           category: r.category || 'general',
-          notes: r.notes || ''
+          notes: r.notes || '',
+          completedCount: r.completedCount || 0,
         })));
       }
     } catch (error) {
@@ -87,12 +117,60 @@ const Reminders = () => {
     }
   }, [reminders]);
 
+  // Next reminder countdown
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date();
+      const activeReminders = reminders.filter(r => r.isActive);
+      if (activeReminders.length === 0) {
+        setNextReminderCountdown('');
+        setNextReminderText('');
+        return;
+      }
+
+      let closestDiff = Infinity;
+      let closestText = '';
+
+      for (const r of activeReminders) {
+        const [h, m] = r.time.split(':').map(Number);
+        const reminderDate = new Date(now);
+        reminderDate.setHours(h, m, 0, 0);
+
+        let diff = reminderDate.getTime() - now.getTime();
+        if (diff < 0) diff += 24 * 60 * 60 * 1000; // next day
+
+        if (diff < closestDiff) {
+          closestDiff = diff;
+          closestText = r.text;
+        }
+      }
+
+      const totalSeconds = Math.floor(closestDiff / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const mins = Math.floor((totalSeconds % 3600) / 60);
+      const secs = totalSeconds % 60;
+
+      setNextReminderCountdown(
+        hours > 0
+          ? `${hours}h ${mins}m ${secs}s`
+          : mins > 0
+          ? `${mins}m ${secs}s`
+          : `${secs}s`
+      );
+      setNextReminderText(closestText);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [reminders]);
+
   const playAlarmSound = useCallback(() => {
     try {
       if (!alarmContextRef.current) {
         alarmContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
-      
+
       const ctx = alarmContextRef.current;
       if (ctx.state === 'suspended') {
         ctx.resume();
@@ -137,22 +215,45 @@ const Reminders = () => {
     }, 1200);
   }, [playAlarmSound]);
 
+  const snoozeReminder = useCallback((reminderId: string, minutes: number) => {
+    stopAlarm();
+    const snoozeUntil = new Date(Date.now() + minutes * 60 * 1000);
+    const newTime = snoozeUntil.toTimeString().slice(0, 5);
+
+    setReminders(prev => prev.map(r =>
+      r.id === reminderId
+        ? { ...r, snoozedUntil: snoozeUntil.toISOString(), time: newTime }
+        : r
+    ));
+
+    toast({
+      title: `⏸️ Snoozed for ${minutes} minutes`,
+      description: `Will ring again at ${newTime}`,
+    });
+  }, [stopAlarm, toast]);
+
   useEffect(() => {
     const checkReminders = () => {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
       const currentDay = DAYS[now.getDay() === 0 ? 6 : now.getDay() - 1];
-      
+
       reminders.forEach(reminder => {
         const shouldRing = reminder.repeatDays.length === 0 || reminder.repeatDays.includes(currentDay);
-        
+
+        // Check snooze
+        if (reminder.snoozedUntil) {
+          const snoozeEnd = new Date(reminder.snoozedUntil);
+          if (now < snoozeEnd) return;
+        }
+
         if (reminder.isActive && reminder.time === currentTime && ringingReminderId !== reminder.id && shouldRing) {
           if (reminder.hasDeviceAlarm && notificationPermission === 'granted') {
             showNativeNotification(reminder);
           }
-          
+
           startAlarm(reminder.id);
-          
+
           toast({
             title: `🔔 ${reminder.priority === 'high' ? '🔥 URGENT: ' : ''}Reminder!`,
             description: reminder.text,
@@ -197,11 +298,12 @@ const Reminders = () => {
         repeatDays: newReminderRepeatDays,
         priority: newReminderPriority,
         category: newReminderCategory,
-        notes: newReminderNotes.trim()
+        notes: newReminderNotes.trim(),
+        completedCount: 0,
       };
 
       setReminders([newReminder, ...reminders]);
-      
+
       setNewReminderText('');
       setNewReminderTime('');
       setNewReminderPriority('medium');
@@ -209,7 +311,7 @@ const Reminders = () => {
       setNewReminderNotes('');
       setNewReminderRepeatDays([]);
       setShowAdvanced(false);
-      
+
       toast({
         title: "⏰ Reminder Set!",
         description: `Reminder set for ${newReminderTime}${newReminderRepeatDays.length > 0 ? ` on ${newReminderRepeatDays.join(', ')}` : ''}`,
@@ -217,10 +319,56 @@ const Reminders = () => {
     }
   };
 
+  const addPresetReminder = (preset: typeof QUICK_PRESETS[0]) => {
+    playClickSound();
+    setNewReminderText(preset.text);
+    setNewReminderCategory(preset.category);
+    setNewReminderPriority(preset.priority);
+    setShowPresets(false);
+    toast({ title: `${preset.icon} Preset loaded`, description: `Set a time for "${preset.text}"` });
+  };
+
+  const duplicateReminder = (reminder: Reminder) => {
+    playClickSound();
+    const dup: Reminder = {
+      ...reminder,
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      completedCount: 0,
+    };
+    setReminders(prev => [dup, ...prev]);
+    toast({ title: "📋 Reminder Duplicated", description: `"${reminder.text}" has been duplicated.` });
+  };
+
+  const startEdit = (reminder: Reminder) => {
+    setEditingId(reminder.id);
+    setEditText(reminder.text);
+  };
+
+  const saveEdit = (id: string) => {
+    if (editText.trim()) {
+      setReminders(prev => prev.map(r => r.id === id ? { ...r, text: editText.trim() } : r));
+      toast({ title: "✏️ Updated", description: "Reminder text updated." });
+    }
+    setEditingId(null);
+    setEditText('');
+  };
+
+  const markCompleted = (reminderId: string) => {
+    playClickSound();
+    stopAlarm();
+    setReminders(prev => prev.map(r =>
+      r.id === reminderId
+        ? { ...r, isActive: false, completedCount: (r.completedCount || 0) + 1 }
+        : r
+    ));
+    toast({ title: "✅ Done!", description: "Great job completing this reminder!" });
+  };
+
   const toggleReminder = (reminderId: string) => {
     playClickSound();
     setReminders(reminders.map(reminder =>
-      reminder.id === reminderId 
+      reminder.id === reminderId
         ? { ...reminder, isActive: !reminder.isActive }
         : reminder
     ));
@@ -233,7 +381,7 @@ const Reminders = () => {
         setNotificationPermission(permission);
         if (permission === 'granted') {
           setReminders(reminders.map(reminder =>
-            reminder.id === reminderId 
+            reminder.id === reminderId
               ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
               : reminder
           ));
@@ -241,7 +389,7 @@ const Reminders = () => {
       });
     } else {
       setReminders(reminders.map(reminder =>
-        reminder.id === reminderId 
+        reminder.id === reminderId
           ? { ...reminder, hasDeviceAlarm: !reminder.hasDeviceAlarm }
           : reminder
       ));
@@ -254,14 +402,11 @@ const Reminders = () => {
       stopAlarm();
     }
     setReminders(reminders.filter(reminder => reminder.id !== reminderId));
-    toast({
-      title: "🗑️ Reminder Deleted",
-      description: "Reminder has been removed.",
-    });
+    toast({ title: "🗑️ Reminder Deleted", description: "Reminder has been removed." });
   };
 
   const toggleRepeatDay = (day: string) => {
-    setNewReminderRepeatDays(prev => 
+    setNewReminderRepeatDays(prev =>
       prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
   };
@@ -270,6 +415,26 @@ const Reminders = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       addReminder();
     }
+  };
+
+  // Bulk actions
+  const activateAll = () => {
+    playClickSound();
+    setReminders(prev => prev.map(r => ({ ...r, isActive: true })));
+    toast({ title: "✅ All Activated", description: "All reminders are now active." });
+  };
+
+  const deactivateAll = () => {
+    playClickSound();
+    setReminders(prev => prev.map(r => ({ ...r, isActive: false })));
+    toast({ title: "⏸️ All Paused", description: "All reminders are paused." });
+  };
+
+  const deleteInactive = () => {
+    playClickSound();
+    const count = reminders.filter(r => !r.isActive).length;
+    setReminders(prev => prev.filter(r => r.isActive));
+    toast({ title: "🗑️ Cleared", description: `Removed ${count} inactive reminders.` });
   };
 
   const getPriorityConfig = (priority: string) => {
@@ -302,6 +467,16 @@ const Reminders = () => {
     const displayHour = h % 12 || 12;
     return { displayHour: displayHour.toString().padStart(2, '0'), minutes, ampm };
   };
+
+  // Filtered reminders
+  const filteredReminders = useMemo(() => {
+    return reminders.filter(r => {
+      if (searchQuery && !r.text.toLowerCase().includes(searchQuery.toLowerCase()) && !r.notes.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterCategory !== 'all' && r.category !== filterCategory) return false;
+      if (filterPriority !== 'all' && r.priority !== filterPriority) return false;
+      return true;
+    });
+  }, [reminders, searchQuery, filterCategory, filterPriority]);
 
   const activeReminders = reminders.filter(r => r.isActive).length;
   const totalReminders = reminders.length;
@@ -339,7 +514,7 @@ const Reminders = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex flex-wrap items-center gap-3 mt-6">
             <Badge className="px-4 py-2 text-sm font-bold rounded-xl bg-primary/20 text-primary border border-primary/30">
               {activeReminders} of {totalReminders} active
             </Badge>
@@ -351,6 +526,27 @@ const Reminders = () => {
             )}
           </div>
         </div>
+
+        {/* Next Reminder Countdown */}
+        {nextReminderCountdown && (
+          <Card className="glass-bold border-2 border-accent/30 mb-6 overflow-hidden">
+            <div className="h-1 w-full bg-gradient-to-r from-accent via-primary to-success" />
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-accent/20 shrink-0">
+                  <Timer className="h-6 w-6 text-accent" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Next Reminder</p>
+                  <p className="font-bold text-foreground truncate">{nextReminderText}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-2xl font-black text-accent tabular-nums">{nextReminderCountdown}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Notification Permission Banner */}
         {notificationPermission !== 'granted' && (
@@ -366,17 +562,14 @@ const Reminders = () => {
                     Get reminded even when the app is in the background
                   </p>
                 </div>
-                <Button 
+                <Button
                   onClick={() => {
                     playClickSound();
                     if ('Notification' in window) {
                       Notification.requestPermission().then(permission => {
                         setNotificationPermission(permission);
                         if (permission === 'granted') {
-                          toast({
-                            title: "🔔 Notifications Enabled!",
-                            description: "You'll now receive device alarms.",
-                          });
+                          toast({ title: "🔔 Notifications Enabled!", description: "You'll now receive device alarms." });
                         }
                       });
                     }
@@ -390,8 +583,40 @@ const Reminders = () => {
           </Card>
         )}
 
-        {/* Add New Reminder - Clock Style */}
-        <Card className="glass-bold border-2 border-primary/20 mb-8 overflow-hidden">
+        {/* Quick Presets */}
+        <Card className="glass-bold border-2 border-primary/10 mb-6 overflow-hidden">
+          <button
+            onClick={() => setShowPresets(!showPresets)}
+            className="w-full p-4 flex items-center justify-between hover:bg-primary/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/20">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
+              <span className="font-bold text-foreground">Quick Presets</span>
+              <span className="text-xs text-muted-foreground">Tap to auto-fill a reminder</span>
+            </div>
+            {showPresets ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+          </button>
+          {showPresets && (
+            <div className="px-4 pb-4 grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in">
+              {QUICK_PRESETS.map((preset) => (
+                <Button
+                  key={preset.text}
+                  variant="outline"
+                  onClick={() => addPresetReminder(preset)}
+                  className="h-auto py-3 flex flex-col items-center gap-1 rounded-xl hover:bg-primary/10 hover:border-primary/40 transition-all"
+                >
+                  <span className="text-xl">{preset.icon}</span>
+                  <span className="text-xs font-semibold text-center leading-tight">{preset.text}</span>
+                </Button>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Add New Reminder */}
+        <Card className="glass-bold border-2 border-primary/20 mb-6 overflow-hidden">
           <div className="h-1.5 w-full bg-gradient-to-r from-primary via-accent to-success" />
           <CardHeader className="pb-4">
             <div className="flex items-center gap-3">
@@ -408,7 +633,6 @@ const Reminders = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Reminder Text + Time - Inline */}
             <div className="flex gap-3 items-center">
               <Input
                 value={newReminderText}
@@ -423,7 +647,6 @@ const Reminders = () => {
               />
             </div>
 
-            {/* Advanced Options Toggle */}
             <Button
               variant="ghost"
               onClick={() => setShowAdvanced(!showAdvanced)}
@@ -433,14 +656,11 @@ const Reminders = () => {
               {showAdvanced ? 'Hide Options' : 'More Options'}
             </Button>
 
-            {/* Advanced Options */}
             {showAdvanced && (
               <div className="space-y-6 animate-fade-in">
                 {/* Priority */}
                 <div className="space-y-3">
-                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    Priority
-                  </label>
+                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Priority</label>
                   <div className="flex gap-3">
                     {PRIORITIES.map(p => (
                       <Button
@@ -462,9 +682,7 @@ const Reminders = () => {
 
                 {/* Category */}
                 <div className="space-y-3">
-                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    Category
-                  </label>
+                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Category</label>
                   <div className="flex flex-wrap gap-2">
                     {CATEGORIES.map(cat => (
                       <Button
@@ -509,9 +727,7 @@ const Reminders = () => {
 
                 {/* Notes */}
                 <div className="space-y-3">
-                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                    Notes
-                  </label>
+                  <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Notes</label>
                   <Textarea
                     value={newReminderNotes}
                     onChange={(e) => setNewReminderNotes(e.target.value)}
@@ -523,8 +739,7 @@ const Reminders = () => {
               </div>
             )}
 
-            {/* Add Button */}
-            <SoundButton 
+            <SoundButton
               onClick={addReminder}
               disabled={!newReminderText.trim() || !newReminderTime}
               className="w-full h-14 font-bold text-lg rounded-xl gradient-primary text-primary-foreground shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -535,13 +750,100 @@ const Reminders = () => {
           </CardContent>
         </Card>
 
+        {/* Search, Filter & Bulk Actions */}
+        {reminders.length > 0 && (
+          <div className="mb-6 space-y-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search reminders..."
+                className="pl-11 h-12 rounded-xl bg-background border-2 border-input focus:border-primary font-medium"
+              />
+            </div>
+
+            {/* Filters Toggle + Bulk Actions */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn("rounded-xl font-semibold", showFilters && "bg-primary/10 border-primary/40 text-primary")}
+              >
+                <Filter className="h-4 w-4 mr-1" />
+                Filters
+              </Button>
+              <div className="flex-1" />
+              <Button variant="ghost" size="sm" onClick={activateAll} className="rounded-xl text-xs font-semibold text-success hover:bg-success/10">
+                <ToggleRight className="h-3.5 w-3.5 mr-1" />
+                Activate All
+              </Button>
+              <Button variant="ghost" size="sm" onClick={deactivateAll} className="rounded-xl text-xs font-semibold text-muted-foreground hover:bg-muted">
+                <ToggleLeft className="h-3.5 w-3.5 mr-1" />
+                Pause All
+              </Button>
+              {reminders.some(r => !r.isActive) && (
+                <Button variant="ghost" size="sm" onClick={deleteInactive} className="rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10">
+                  <Trash className="h-3.5 w-3.5 mr-1" />
+                  Clear Inactive
+                </Button>
+              )}
+            </div>
+
+            {/* Filter Options */}
+            {showFilters && (
+              <div className="flex flex-wrap gap-2 p-3 rounded-xl bg-muted/30 border border-border animate-fade-in">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Category:</span>
+                  <Badge
+                    onClick={() => setFilterCategory('all')}
+                    className={cn("cursor-pointer text-xs rounded-full", filterCategory === 'all' ? "bg-primary/20 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border")}
+                  >
+                    All
+                  </Badge>
+                  {CATEGORIES.map(cat => (
+                    <Badge
+                      key={cat}
+                      onClick={() => setFilterCategory(cat)}
+                      className={cn("cursor-pointer text-xs rounded-full capitalize", filterCategory === cat ? "bg-primary/20 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border")}
+                    >
+                      {getCategoryConfig(cat).icon} {cat}
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-bold text-muted-foreground uppercase">Priority:</span>
+                  <Badge
+                    onClick={() => setFilterPriority('all')}
+                    className={cn("cursor-pointer text-xs rounded-full", filterPriority === 'all' ? "bg-primary/20 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border")}
+                  >
+                    All
+                  </Badge>
+                  {PRIORITIES.map(p => (
+                    <Badge
+                      key={p.value}
+                      onClick={() => setFilterPriority(p.value)}
+                      className={cn("cursor-pointer text-xs rounded-full capitalize", filterPriority === p.value ? "bg-primary/20 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border")}
+                    >
+                      {p.label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Reminders List */}
         <div className="space-y-4">
-          {reminders.map((reminder) => {
+          {filteredReminders.map((reminder) => {
             const priorityConfig = getPriorityConfig(reminder.priority);
             const categoryConfig = getCategoryConfig(reminder.category);
             const timeDisplay = formatTime(reminder.time);
             const isRinging = ringingReminderId === reminder.id;
+            const isEditing = editingId === reminder.id;
 
             return (
               <Card
@@ -555,7 +857,7 @@ const Reminders = () => {
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    {/* Time Display - Clock Style */}
+                    {/* Time Display */}
                     <div className={cn(
                       "flex flex-col items-center justify-center p-4 rounded-2xl min-w-[100px]",
                       reminder.isActive ? "bg-primary/10 border-2 border-primary/30" : "bg-muted border-2 border-border"
@@ -577,18 +879,36 @@ const Reminders = () => {
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 mb-2">
-                        <p className={cn(
-                          "font-bold text-lg",
-                          reminder.isActive ? "text-foreground" : "text-muted-foreground"
-                        )}>
-                          {reminder.text}
-                        </p>
+                        {isEditing ? (
+                          <div className="flex items-center gap-2 flex-1">
+                            <Input
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && saveEdit(reminder.id)}
+                              className="h-8 text-sm font-bold rounded-lg"
+                              autoFocus
+                            />
+                            <Button variant="ghost" size="icon" onClick={() => saveEdit(reminder.id)} className="h-8 w-8 text-success">
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setEditingId(null)} className="h-8 w-8 text-destructive">
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className={cn(
+                            "font-bold text-lg",
+                            reminder.isActive ? "text-foreground" : "text-muted-foreground"
+                          )}>
+                            {reminder.text}
+                          </p>
+                        )}
                       </div>
-                      
+
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge className={cn("text-xs font-bold rounded-full border", priorityConfig.className)}>
-                          {reminder.priority === 'high' ? <Flame className="h-3 w-3 mr-1" /> : 
-                           reminder.priority === 'medium' ? <Zap className="h-3 w-3 mr-1" /> : 
+                          {reminder.priority === 'high' ? <Flame className="h-3 w-3 mr-1" /> :
+                           reminder.priority === 'medium' ? <Zap className="h-3 w-3 mr-1" /> :
                            <Star className="h-3 w-3 mr-1" />}
                           {reminder.priority}
                         </Badge>
@@ -601,58 +921,109 @@ const Reminders = () => {
                             {reminder.repeatDays.join(', ')}
                           </Badge>
                         )}
+                        {(reminder.completedCount || 0) > 0 && (
+                          <Badge className="text-xs font-semibold rounded-full bg-success/20 text-success border border-success/30">
+                            ✅ {reminder.completedCount}x done
+                          </Badge>
+                        )}
                       </div>
-                      
+
                       {reminder.notes && (
                         <p className="text-sm text-muted-foreground mt-2 line-clamp-1">
                           📝 {reminder.notes}
                         </p>
                       )}
+
+                      {/* Snooze options when ringing */}
+                      {isRinging && (
+                        <div className="flex flex-wrap gap-2 mt-3 animate-fade-in">
+                          <span className="text-xs font-bold text-muted-foreground self-center mr-1">Snooze:</span>
+                          {SNOOZE_OPTIONS.map(opt => (
+                            <Button
+                              key={opt.minutes}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => snoozeReminder(reminder.id, opt.minutes)}
+                              className="rounded-xl text-xs font-bold hover:bg-warning/10 hover:border-warning/40 hover:text-warning"
+                            >
+                              <Pause className="h-3 w-3 mr-1" />
+                              {opt.label}
+                            </Button>
+                          ))}
+                          <Button
+                            size="sm"
+                            onClick={() => markCompleted(reminder.id)}
+                            className="rounded-xl text-xs font-bold bg-success/20 text-success border border-success/30 hover:bg-success/30"
+                          >
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Done
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-col items-center gap-1 shrink-0">
                       {isRinging && (
                         <Button
                           onClick={() => stopAlarm()}
-                          className="font-bold rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 animate-pulse"
+                          size="sm"
+                          className="font-bold rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 animate-pulse mb-1"
                         >
-                          <VolumeX className="h-4 w-4 mr-2" />
+                          <VolumeX className="h-4 w-4 mr-1" />
                           Stop
                         </Button>
                       )}
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleReminder(reminder.id)}
-                        className={cn(
-                          "h-10 w-10 rounded-xl",
-                          reminder.isActive ? "text-success hover:bg-success/20" : "text-muted-foreground hover:bg-muted"
-                        )}
-                      >
-                        {reminder.isActive ? <CheckCircle2 className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleDeviceAlarm(reminder.id)}
-                        className={cn(
-                          "h-10 w-10 rounded-xl",
-                          reminder.hasDeviceAlarm ? "text-primary hover:bg-primary/20" : "text-muted-foreground hover:bg-muted"
-                        )}
-                      >
-                        {reminder.hasDeviceAlarm ? <BellRing className="h-5 w-5" /> : <Bell className="h-5 w-5" />}
-                      </Button>
-                      
+
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => startEdit(reminder)}
+                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => duplicateReminder(reminder)}
+                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-accent hover:bg-accent/10"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleReminder(reminder.id)}
+                          className={cn(
+                            "h-9 w-9 rounded-xl",
+                            reminder.isActive ? "text-success hover:bg-success/20" : "text-muted-foreground hover:bg-muted"
+                          )}
+                        >
+                          {reminder.isActive ? <CheckCircle2 className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => toggleDeviceAlarm(reminder.id)}
+                          className={cn(
+                            "h-9 w-9 rounded-xl",
+                            reminder.hasDeviceAlarm ? "text-primary hover:bg-primary/20" : "text-muted-foreground hover:bg-muted"
+                          )}
+                        >
+                          {reminder.hasDeviceAlarm ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                        </Button>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => deleteReminder(reminder.id)}
-                        className="h-10 w-10 rounded-xl text-destructive hover:bg-destructive/20"
+                        className="h-9 w-9 rounded-xl text-destructive hover:bg-destructive/20"
                       >
-                        <Trash2 className="h-5 w-5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -661,6 +1032,17 @@ const Reminders = () => {
             );
           })}
         </div>
+
+        {/* No results from filter */}
+        {reminders.length > 0 && filteredReminders.length === 0 && (
+          <Card className="glass-bold border-2 border-muted/30 text-center py-12">
+            <CardContent>
+              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-bold mb-2 text-foreground">No matching reminders</h3>
+              <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Empty State */}
         {reminders.length === 0 && (
